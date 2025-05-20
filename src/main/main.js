@@ -88,13 +88,12 @@ function createWindow() {
 
   // Modifica esta parte para cargar correctamente en desarrollo y producción
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.loadURL('http://localhost:5173');
+    // Solo abrir DevTools en desarrollo si es necesario
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'));
   }
-
-  // Para debug
-  mainWindow.webContents.openDevTools();
 
   return mainWindow;
 }
