@@ -1,17 +1,10 @@
-const axios = require('axios').default;
+const axios = require('axios');
 const FormData = require('form-data');
 
 class YouSignService {
     constructor() {
-        // Valores por defecto para producción
-        const DEFAULT_URL = 'https://api-sandbox.yousign.app/v3';
-        const DEFAULT_KEY = '8twTw6VOdfkNr8vULriwF7pQtCUoBobE';
-        
-        // Intentar obtener de variables de entorno, sino usar valores por defecto
-        this.BASE_URL = process.env.VITE_YOUSIGN_API_URL || DEFAULT_URL;
-        this.API_KEY = process.env.VITE_YOUSIGN_API_KEY || DEFAULT_KEY;
-        
-        console.log('YouSign API configurado:', this.BASE_URL);
+        this.BASE_URL = 'https://api-sandbox.yousign.app/v3';
+        this.API_KEY = '8twTw6VOdfkNr8vULriwF7pQtCUoBobE';
     }
 
     async request(endpoint = '', options = {}, headers = {}) {
@@ -31,20 +24,6 @@ class YouSignService {
             return res.data;
         } catch (error) {
             console.error('Error en solicitud YouSign:', error.response?.data || error.message);
-            if (error.response) {
-                // La solicitud fue realizada y el servidor respondió con un código de estado
-                console.error('Respuesta de error:', {
-                    status: error.response.status,
-                    data: error.response.data,
-                    headers: error.response.headers
-                });
-            } else if (error.request) {
-                // La solicitud fue realizada pero no se recibió respuesta
-                console.error('Sin respuesta del servidor:', error.request);
-            } else {
-                // Algo sucedió al configurar la solicitud que desencadenó un error
-                console.error('Error de configuración:', error.message);
-            }
             throw new Error(`Error en YouSign: ${error.message}`);
         }
     }
@@ -117,8 +96,15 @@ class YouSignService {
     }
 
     async activateSignatureRequest(signatureRequestId) {
+        if (!signatureRequestId) {
+            throw new Error('Se requiere ID de solicitud de firma');
+        }
+
         const options = {
             method: 'POST',
+        };
+        const headers = {
+            'Accept': 'application/json'
         };
         
         return await this.request(`signature_requests/${signatureRequestId}/activate`, options);

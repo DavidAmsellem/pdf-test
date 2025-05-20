@@ -7,12 +7,14 @@
   padding: 2rem; /* Espaciado interno general */
   min-height: 100vh; /* Altura mínima para ocupar toda la pantalla */
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); /* Fondo con degradado */
-  height: 100vh; /* Altura fija para ocupar toda la pantalla */
+  height: calc(100vh - 32px); /* Ajuste para la barra de título */
   overflow-y: auto; /* Permite scroll vertical si el contenido excede la altura */
   scroll-behavior: smooth; /* Scroll suave al navegar con anclas (si aplica) */
   scrollbar-width: thin; /* Ancho del scrollbar (para Firefox) */
   scrollbar-color: var(--primary-color) var(--bg-secondary); /* Color del scrollbar (para Firefox) */
   padding-top: calc(32px + 2rem); /* Ajuste para la barra de título personalizada (32px) más el padding normal */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Estilos del scrollbar para navegadores WebKit (Chrome, Safari, Edge) */
@@ -244,6 +246,8 @@
   gap: 1rem; /* Espacio entre tarjetas de biblioteca */
   padding: 0 rem; /* Espaciado interno (puede ser redundante si .pdf-library-container ya tiene suficiente) */
   margin: 2rem 0; /* Margen vertical */
+  margin-bottom: 8rem; /* Añadir más espacio al final */
+  padding-bottom: 4rem; /* Padding adicional */
 }
 
 /* Estilos para la tarjeta de una biblioteca individual */

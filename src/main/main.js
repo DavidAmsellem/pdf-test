@@ -11,7 +11,7 @@ try {
 
 // Valores por defecto para producción
 const DEFAULT_YOUSIGN_API_KEY = '8twTw6VOdfkNr8vULriwF7pQtCUoBobE';
-const DEFAULT_YOUSIGN_API_URL = 'https://api-sandbox.yousign.app/v3';
+const DEFAULT_YOUSIGN_API_URL = 'https://api-sandbox-d3e68ba0cf.yousign.app';
 
 // Usar valores de entorno o por defecto
 process.env.YOUSIGN_API_KEY = process.env.YOUSIGN_API_KEY || DEFAULT_YOUSIGN_API_KEY;
@@ -50,6 +50,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,

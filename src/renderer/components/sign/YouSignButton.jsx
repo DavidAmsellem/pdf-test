@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { supabase } from '../../../supabase/client';
 import YouSignWizard from './YouSignWizard';
 import SignatureStatus from '../SignatureStatus';
 import '../../styles/sign/YouSignButton.css';// Asegúrate de que la ruta sea correcta
@@ -11,20 +12,54 @@ const YouSignButton = ({ pdfId, title }) => {
     // Estado para mostrar/ocultar el wizard
     const [showWizard, setShowWizard] = useState(false);
 
+    // Función para asegurar que el PDF esté en caché antes de firmarlo
+    const ensurePdfIsCached = async () => {
+        try {
+            // Primero verificar si ya está en caché
+            const cached = await window.electronAPI.getFromCache(pdfId);
+            if (cached) return true;
+
+            // Si no está en caché, obtener URL y descargar
+            const { data: { signedUrl }, error: urlError } = await supabase.storage
+                .from('pdfs')
+                .createSignedUrl(pdfId, 60);
+
+            if (urlError) throw urlError;
+
+            const result = await window.electronAPI.downloadAndCache({
+                id: pdfId,
+                url: signedUrl,
+                metadata: { title }
+            });
+
+            if (!result.success) throw new Error(result.error);
+            return true;
+        } catch (error) {
+            console.error('Error al cachear PDF:', error);
+            return false;
+        }
+    };
+
     // Función que maneja el envío del formulario
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
         setLoading(true); // Activa el estado de carga
 
-        const formData = new FormData(e.target);
-        const data = {
-            pdfId,
-            title,
-            signerEmail: formData.get('signerEmail'),
-            signerName: formData.get('signerName')
-        };
-
         try {
+            // Asegurarse de que el PDF esté en caché antes de proceder
+            const isCached = await ensurePdfIsCached();
+            if (!isCached) {
+                throw new Error('No se pudo preparar el PDF para la firma');
+            }
+
+            const formData = new FormData(e.target);
+            const data = {
+                pdfId,
+                title,
+                signerEmail: formData.get('signerEmail'),
+                signerName: formData.get('signerName')
+            };
+
             // Envía los datos a la API de electron
             const result = await window.electronAPI.sendToYouSign(data);
 

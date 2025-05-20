@@ -1,21 +1,36 @@
 // electron.vite.config.js
-import { defineConfig } from 'vite';
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { createVuePlugin } from 'vite-plugin-vue2';
+import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [createVuePlugin()],
-  build: {
-    outDir: resolve(__dirname, 'dist'),
-    emptyOutDir: true,
+  main: {
+    plugins: [externalizeDepsPlugin()],
   },
-  server: {
-    port: 3000,
-    open: true,
+  preload: {
+    plugins: [externalizeDepsPlugin()],
   },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
+  renderer: {
+    resolve: {
+      alias: {
+        '@renderer': resolve('src/renderer'),
+        '@': resolve(__dirname, 'src'),
+      },
+    },
+    plugins: [react()],
+    optimizeDeps: {
+      include: ['pdfjs-dist'],
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            pdfjs: ['pdfjs-dist'],
+          },
+        },
+      },
     },
   },
 });

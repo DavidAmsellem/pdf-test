@@ -1,10 +1,16 @@
-import { supabase } from '../supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import * as pdfjsLib from 'pdfjs-dist';
-import { encryptionService } from './encryptionService';
 
-// Configuración del worker con versión específica
-const PDFJS_VERSION = '3.4.120';
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.js`;
+// Importar el worker directamente desde node_modules
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Configurar el worker de PDF.js usando la URL local
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const getSignedUrl = async (path, expiresIn = 3600) => {
     const { data, error } = await supabase.storage
@@ -16,60 +22,97 @@ const getSignedUrl = async (path, expiresIn = 3600) => {
 };
 
 const generatePDFCover = async (pdfFile) => {
+    let loadingTask = null;
+    let pdfDocument = null;
+    
     try {
-        // Crear un ArrayBuffer del archivo
         const arrayBuffer = await pdfFile.arrayBuffer();
         
-        // Configurar el documento PDF
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        const pdf = await loadingTask.promise;
+        // Configurar el documento PDF con opciones optimizadas
+        loadingTask = pdfjsLib.getDocument({
+            data: arrayBuffer,
+            cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+            cMapPacked: true,
+            standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
+        });
         
-        // Obtener la primera página
-        const page = await pdf.getPage(1);
+        pdfDocument = await loadingTask.promise;
+        const page = await pdfDocument.getPage(1);
         
-        // Configurar el canvas con mayor escala
-        const scale = 2.0;
-        const viewport = page.getViewport({ scale });
-        
+        // Configurar el canvas con un tamaño optimizado
+        const viewport = page.getViewport({ scale: 1.5 });
         const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d', { alpha: false });
+        
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         
-        const context = canvas.getContext('2d', { willReadFrequently: true });
-        
-        // Renderizar con fondo blanco
+        // Aplicar fondo blanco
         context.fillStyle = 'white';
         context.fillRect(0, 0, canvas.width, canvas.height);
         
-        await page.render({
-            canvasContext: context,
-            viewport: viewport,
-            background: 'rgb(255, 255, 255)'
-        }).promise;
+        try {
+            // Renderizar con WebGL si está disponible
+            await page.render({
+                canvasContext: context,
+                viewport: viewport,
+                enableWebGL: true,
+                background: 'rgb(255, 255, 255)'
+            }).promise;
+        } catch (renderError) {
+            // Si falla WebGL, intentar sin él
+            await page.render({
+                canvasContext: context,
+                viewport: viewport,
+                enableWebGL: false,
+                background: 'rgb(255, 255, 255)'
+            }).promise;
+        }
 
-        // Convertir a blob con alta calidad
+        // Convertir a blob con calidad media para optimizar tamaño
         const blob = await new Promise(resolve => {
-            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 1.0);
+            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.75);
         });
 
-        // Limpiar recursos
-        canvas.width = 0;
-        canvas.height = 0;
-        context.clearRect(0, 0, 0, 0);
-        
         return blob;
     } catch (error) {
-        console.error('Error detallado en generatePDFCover:', error);
+        console.error('Error en generatePDFCover:', error);
         return null;
+    } finally {
+        // Limpiar recursos
+        if (pdfDocument) {
+            try {
+                await pdfDocument.destroy();
+            } catch (error) {
+                console.error('Error al destruir documento PDF:', error);
+            }
+        }
+        if (loadingTask) {
+            try {
+                await loadingTask.destroy();
+            } catch (error) {
+                console.error('Error al destruir loadingTask:', error);
+            }
+        }
     }
 };
 
-// Función auxiliar para verificar URLs
+// Función auxiliar para verificar URLs con caché
+const urlCache = new Map();
 const verifyUrl = async (url) => {
+    if (urlCache.has(url)) {
+        return urlCache.get(url);
+    }
     try {
-        const response = await fetch(url, { method: 'HEAD' });
-        return response.ok;
+        const response = await fetch(url, { 
+            method: 'HEAD',
+            cache: 'force-cache'
+        });
+        const isValid = response.ok;
+        urlCache.set(url, isValid);
+        return isValid;
     } catch (error) {
+        urlCache.set(url, false);
         return false;
     }
 };
@@ -77,48 +120,71 @@ const verifyUrl = async (url) => {
 // Modificar la parte de generación y subida de carátula en createPDF
 const handleCoverUpload = async (coverBlob, fileName) => {
     try {
-        console.log('Iniciando subida de carátula...');
-        
         if (!coverBlob) {
             console.warn('No se generó el blob de la carátula');
             return null;
         }
 
+        // Comprimir el blob si es demasiado grande
+        if (coverBlob.size > 500000) { // Si es mayor a 500KB
+            const img = new Image();
+            const canvas = document.createElement('canvas');
+            img.src = URL.createObjectURL(coverBlob);
+            
+            await new Promise(resolve => {
+                img.onload = () => {
+                    const ctx = canvas.getContext('2d');
+                    const maxSize = 800;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height *= maxSize / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width *= maxSize / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob(blob => {
+                        coverBlob = blob;
+                        URL.revokeObjectURL(img.src);
+                        resolve();
+                    }, 'image/jpeg', 0.7);
+                };
+            });
+        }
+
         const coverFileName = `covers/${Date.now()}-${fileName.replace('.pdf', '.jpg')}`;
         
-        // 1. Subir la carátula
         const { data: coverUpload, error: coverError } = await supabase.storage
             .from('pdfs')
             .upload(coverFileName, coverBlob, {
                 contentType: 'image/jpeg',
                 cacheControl: '3600',
-                upsert: false // Evitar sobreescrituras accidentales
+                upsert: false
             });
 
-        if (coverError) {
-            console.error('Error subiendo carátula:', coverError);
-            throw coverError;
-        }
+        if (coverError) throw coverError;
 
-        console.log('Carátula subida exitosamente:', coverFileName);
-
-        // 2. Obtener URL firmada
         const { data: coverUrl, error: urlError } = await supabase.storage
             .from('pdfs')
             .createSignedUrl(coverFileName, 3600);
 
-        if (urlError) {
-            console.error('Error generando URL firmada para carátula:', urlError);
-            throw urlError;
-        }
+        if (urlError) throw urlError;
 
-        // 3. Verificar que la URL sea accesible
         const isUrlValid = await verifyUrl(coverUrl.signedUrl);
         if (!isUrlValid) {
             throw new Error('La URL de la carátula no es accesible');
         }
-
-        console.log('URL de carátula generada:', coverUrl.signedUrl);
 
         return {
             path: coverFileName,
@@ -126,14 +192,7 @@ const handleCoverUpload = async (coverBlob, fileName) => {
         };
 
     } catch (error) {
-        console.error('Error completo en handleCoverUpload:', error);
-        // Intentar limpiar si algo falló
-        if (arguments[2]?.path) {
-            await supabase.storage
-                .from('pdfs')
-                .remove([arguments[2].path])
-                .catch(e => console.error('Error limpiando carátula fallida:', e));
-        }
+        console.error('Error en handleCoverUpload:', error);
         return null;
     }
 };
@@ -213,6 +272,36 @@ export const databaseService = {
         }
     },
 
+    getPDFsByLibrary: async (libraryId) => {
+        try {
+            const { data: pdfs, error } = await supabase
+                .from('pdfs')
+                .select('*')
+                .eq('library_id', libraryId);
+
+            if (error) throw error;
+
+            // Generar nuevas URLs firmadas
+            const pdfsWithSignedUrls = await Promise.all(pdfs.map(async (pdf) => {
+                const [fileUrl, coverUrl] = await Promise.all([
+                    getSignedUrl(pdf.storage_path),
+                    pdf.cover_path ? getSignedUrl(pdf.cover_path) : null
+                ]);
+
+                return {
+                    ...pdf,
+                    public_url: fileUrl,
+                    cover_url: coverUrl
+                };
+            }));
+
+            return { data: pdfsWithSignedUrls, error: null };
+        } catch (error) {
+            console.error('Error en getPDFsByLibrary:', error);
+            return { data: [], error }; // Retornamos array vacío en caso de error
+        }
+    },
+
     createPDF: async (fileData) => {
         try {
             if (!fileData.title || !fileData.file || !fileData.libraryId || !fileData.userId) {
@@ -255,123 +344,28 @@ export const databaseService = {
                 // Continuamos sin carátula, pero logueamos el error
             }
 
-            // 4. Cifrar datos incluyendo verificación
-            const encryptedData = {
-                title: encryptionService.encrypt(fileData.title),
-                fileName: encryptionService.encrypt(fileData.fileName),
-                publicUrl: encryptionService.encrypt(urlData.signedUrl),
-                coverUrl: coverData?.url ? encryptionService.encrypt(coverData.url) : null,
-                coverPath: coverData?.path ? encryptionService.encrypt(coverData.path) : null
-            };
-
-            // Verificar que los datos encriptados sean válidos
-            Object.entries(encryptedData).forEach(([key, value]) => {
-                if (value && !encryptionService.decrypt(value)) {
-                    throw new Error(`Error en la encriptación de ${key}`);
-                }
-            });
-
-            // 5. Preparar datos para inserción con verificación
             const pdfData = {
-                // Versiones cifradas
-                title_encrypted: encryptedData.title,
-                file_name_encrypted: encryptedData.fileName,
-                public_url_encrypted: encryptedData.publicUrl,
-                cover_url_encrypted: encryptedData.coverUrl,
-                storage_path_encrypted: encryptionService.encrypt(fileUpload.path),
-                cover_path_encrypted: encryptedData.coverPath,
-                // Datos no sensibles
+                title: fileData.title,
+                file_name: fileData.fileName,
                 library_id: fileData.libraryId,
                 user_id: fileData.userId,
                 file_size: fileData.fileSize,
-                // Mantener versiones sin cifrar para búsquedas
-                title: fileData.title,
-                file_name: fileData.fileName,
-                // Rutas originales para manejo interno
                 storage_path: fileUpload.path,
                 cover_path: coverData ? coverData.path : null,
-                cover_url: coverData?.url || null,
-                cover_path: coverData?.path || null,
-                cover_url_encrypted: encryptedData.coverUrl,
-                cover_path_encrypted: encryptedData.coverPath
+                cover_url: coverData?.url || null
             };
 
-            // Logging adicional
-            console.log('Datos de carátula a insertar:', {
-                cover_url: pdfData.cover_url ? 'presente' : 'ausente',
-                cover_path: pdfData.cover_path ? 'presente' : 'ausente',
-                cover_url_encrypted: pdfData.cover_url_encrypted ? 'presente' : 'ausente',
-                cover_path_encrypted: pdfData.cover_path_encrypted ? 'presente' : 'ausente'
-            });
-
-            // 6. Insertar en la base de datos
             const { data, error: insertError } = await supabase
                 .from('pdfs')
                 .insert([pdfData])
                 .select('*')
                 .single();
 
-            if (insertError) {
-                console.error('Error de inserción:', insertError);
-                // Limpiar archivos subidos si falla la inserción
-                await supabase.storage.from('pdfs').remove([fileUpload.path]);
-                if (coverData) {
-                    await supabase.storage.from('pdfs').remove([coverData.path]);
-                }
-                throw insertError;
-            }
+            if (insertError) throw insertError;
 
-            return { 
-                data: {
-                    ...data,
-                    title: data.title,
-                    file_name: data.file_name,
-                    cover_url: coverData ? coverData.url : null
-                }, 
-                error: null 
-            };
-
+            return { data, error: null };
         } catch (error) {
-            console.error('Error completo:', error);
-            return { data: null, error };
-        }
-    },
-
-    getPDFsByLibrary: async (libraryId) => {
-        try {
-            const { data: encryptedPdfs, error } = await supabase
-                .from('pdfs')
-                .select('*')
-                .eq('library_id', libraryId);
-
-            if (error) throw error;
-
-            // Descifrar todos los datos sensibles
-            const decryptedPdfs = encryptedPdfs.map(pdf => ({
-                ...pdf,
-                title: pdf.title_encrypted ? encryptionService.decrypt(pdf.title_encrypted) : pdf.title,
-                file_name: pdf.file_name_encrypted ? encryptionService.decrypt(pdf.file_name_encrypted) : pdf.file_name,
-                public_url: pdf.public_url_encrypted ? encryptionService.decrypt(pdf.public_url_encrypted) : pdf.public_url,
-                cover_url: pdf.cover_url_encrypted ? encryptionService.decrypt(pdf.cover_url_encrypted) : pdf.cover_url
-            }));
-
-            // Generar nuevas URLs firmadas
-            const pdfsWithSignedUrls = await Promise.all(decryptedPdfs.map(async (pdf) => {
-                const [fileUrl, coverUrl] = await Promise.all([
-                    getSignedUrl(pdf.storage_path),
-                    pdf.cover_path ? getSignedUrl(pdf.cover_path) : null
-                ]);
-
-                return {
-                    ...pdf,
-                    public_url: fileUrl,
-                    cover_url: coverUrl
-                };
-            }));
-
-            return { data: pdfsWithSignedUrls, error: null };
-        } catch (error) {
-            console.error('Error en getPDFsByLibrary:', error);
+            console.error('Error:', error);
             return { data: null, error };
         }
     },
@@ -428,12 +422,12 @@ export const databaseService = {
 
     getStats: async (userId) => {
         try {
-            const { data: encryptedPdfs, error: pdfError } = await supabase
+            const { data: pdfs, error: pdfError } = await supabase
                 .from('pdfs')
                 .select(`
                     id, 
                     file_size,
-                    title_encrypted,
+                    title,
                     updated_at,
                     libraries(name)
                 `)
@@ -443,14 +437,12 @@ export const databaseService = {
             if (pdfError) throw pdfError;
 
             const stats = {
-                totalPdfs: encryptedPdfs.length,
-                totalSize: encryptedPdfs.reduce((acc, pdf) => acc + (pdf.file_size || 0), 0),
-                lastUpdated: encryptedPdfs[0] ? {
-                    title: encryptedPdfs[0].title_encrypted ? 
-                        encryptionService.decrypt(encryptedPdfs[0].title_encrypted) : 
-                        encryptedPdfs[0].title,
-                    library: encryptedPdfs[0].libraries?.name,
-                    date: new Date(encryptedPdfs[0].updated_at).toLocaleDateString()
+                totalPdfs: pdfs.length,
+                totalSize: pdfs.reduce((acc, pdf) => acc + (pdf.file_size || 0), 0),
+                lastUpdated: pdfs[0] ? {
+                    title: pdfs[0].title,
+                    library: pdfs[0].libraries?.name,
+                    date: new Date(pdfs[0].updated_at).toLocaleDateString()
                 } : null
             };
 
@@ -463,7 +455,7 @@ export const databaseService = {
 
     getAllPDFs: async (userId) => {
         try {
-            const { data: encryptedPdfs, error } = await supabase
+            const { data: pdfs, error } = await supabase
                 .from('pdfs')
                 .select(`
                     *,
@@ -477,8 +469,7 @@ export const databaseService = {
 
             if (error) throw error;
 
-            // Descifrar los datos
-            const decryptedPdfs = await Promise.all(encryptedPdfs.map(async (pdf) => {
+            const pdfsWithUrls = await Promise.all(pdfs.map(async (pdf) => {
                 const [fileUrl, coverUrl] = await Promise.all([
                     getSignedUrl(pdf.storage_path),
                     pdf.cover_path ? getSignedUrl(pdf.cover_path) : null
@@ -486,14 +477,12 @@ export const databaseService = {
 
                 return {
                     ...pdf,
-                    title: pdf.title_encrypted ? encryptionService.decrypt(pdf.title_encrypted) : pdf.title,
-                    file_name: pdf.file_name_encrypted ? encryptionService.decrypt(pdf.file_name_encrypted) : pdf.file_name,
                     public_url: fileUrl,
                     cover_url: coverUrl
                 };
             }));
             
-            return { data: decryptedPdfs, error: null };
+            return { data: pdfsWithUrls, error: null };
         } catch (error) {
             console.error('Error en getAllPDFs:', error);
             return { data: null, error };

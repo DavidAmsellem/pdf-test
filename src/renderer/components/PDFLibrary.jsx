@@ -91,10 +91,28 @@ const PDFLibrary = () => {
             if (libsError) throw libsError;
             setLibraries(libs || []);
             
-            // Carga PDFs para cada biblioteca.
-            // Optimización: Promise.all para cargar PDFs en paralelo.
-            const pdfLoadPromises = (libs || []).map(library => loadPDFsForLibrary(library.id));
-            await Promise.all(pdfLoadPromises);
+            // Cargar PDFs para bibliotecas expandidas o visibles primero
+            const visibleLibraries = libs?.filter(lib => 
+                expandedLibrary === lib.id || 
+                lib.id === selectedLibrary
+            ) || [];
+
+            // Cargar PDFs visibles primero
+            await Promise.all(
+                visibleLibraries.map(library => loadPDFsForLibrary(library.id))
+            );
+
+            // Cargar el resto de PDFs en segundo plano
+            const remainingLibraries = libs?.filter(lib => 
+                !visibleLibraries.some(visible => visible.id === lib.id)
+            ) || [];
+
+            // Usar setTimeout para dar prioridad a la interfaz
+            setTimeout(() => {
+                Promise.all(
+                    remainingLibraries.map(library => loadPDFsForLibrary(library.id))
+                );
+            }, 100);
 
         } catch (error) {
             console.error('Error al cargar bibliotecas:', error);
@@ -112,10 +130,22 @@ const PDFLibrary = () => {
         try {
             const { data, error } = await databaseService.getPDFsByLibrary(libraryId);
             if (error) throw error;
+
+            // Actualizar el estado de forma inmutable
             setLibraryPdfs(prev => ({
                 ...prev,
                 [libraryId]: data || []
             }));
+
+            // Pre-cargar las miniaturas
+            if (data && data.length > 0) {
+                data.forEach(pdf => {
+                    if (pdf.cover_url) {
+                        const img = new Image();
+                        img.src = pdf.cover_url;
+                    }
+                });
+            }
         } catch (error) {
             console.error(`Error al cargar PDFs para la biblioteca ${libraryId}:`, error);
         }

@@ -23,14 +23,28 @@ class CacheService {
             const pdfPath = path.join(this.cachePath, `${pdfId}.pdf`);
             const metadataPath = path.join(this.cachePath, `${pdfId}.json`);
 
+            // Verificar si el directorio existe antes de escribir
+            await fsPromises.access(this.cachePath).catch(async () => {
+                await this.init();
+            });
+
+            // Escribir archivos con manejo de errores mejorado
             await Promise.all([
-                fsPromises.writeFile(pdfPath, data),
+                fsPromises.writeFile(pdfPath, data).catch(error => {
+                    console.error(`Error al guardar PDF ${pdfId}:`, error);
+                    throw error;
+                }),
                 fsPromises.writeFile(metadataPath, JSON.stringify({
                     ...metadata,
-                    cachedAt: Date.now()
-                }))
+                    cachedAt: Date.now(),
+                    pdfId
+                })).catch(error => {
+                    console.error(`Error al guardar metadata ${pdfId}:`, error);
+                    throw error;
+                })
             ]);
 
+            console.log(`PDF ${pdfId} guardado en caché correctamente`);
             return true;
         } catch (error) {
             console.error('Error al guardar en caché:', error);
@@ -43,6 +57,12 @@ class CacheService {
             const pdfPath = path.join(this.cachePath, `${pdfId}.pdf`);
             const metadataPath = path.join(this.cachePath, `${pdfId}.json`);
 
+            // Verificar si los archivos existen
+            await Promise.all([
+                fsPromises.access(pdfPath),
+                fsPromises.access(metadataPath)
+            ]);
+
             const [pdfData, metadataRaw] = await Promise.all([
                 fsPromises.readFile(pdfPath),
                 fsPromises.readFile(metadataPath, 'utf-8')
@@ -51,13 +71,19 @@ class CacheService {
             const metadata = JSON.parse(metadataRaw);
             
             // Verificar si el caché es válido (24 horas)
-            if (Date.now() - metadata.cachedAt > 24 * 60 * 60 * 1000) {
+            const cacheAge = Date.now() - metadata.cachedAt;
+            const maxAge = 24 * 60 * 60 * 1000; // 24 horas
+
+            if (cacheAge > maxAge) {
+                console.log(`Caché expirado para PDF ${pdfId}`);
                 await this.removeFromCache(pdfId);
                 return null;
             }
 
+            console.log(`PDF ${pdfId} recuperado de caché`);
             return { data: pdfData, metadata };
         } catch (error) {
+            console.log(`PDF ${pdfId} no encontrado en caché:`, error.message);
             return null;
         }
     }
@@ -68,12 +94,18 @@ class CacheService {
             const metadataPath = path.join(this.cachePath, `${pdfId}.json`);
 
             await Promise.all([
-                fsPromises.unlink(pdfPath).catch(() => {}),
-                fsPromises.unlink(metadataPath).catch(() => {})
+                fsPromises.unlink(pdfPath).catch(() => {
+                    console.log(`PDF ${pdfId} no existe en caché`);
+                }),
+                fsPromises.unlink(metadataPath).catch(() => {
+                    console.log(`Metadata de ${pdfId} no existe en caché`);
+                })
             ]);
 
+            console.log(`PDF ${pdfId} eliminado de caché`);
             return true;
         } catch (error) {
+            console.error(`Error al eliminar de caché ${pdfId}:`, error);
             return false;
         }
     }
