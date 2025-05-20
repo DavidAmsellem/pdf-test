@@ -1,0 +1,1157 @@
+/* ==========================================================================
+   1. ESTILOS GLOBALES Y DEL CONTENEDOR PRINCIPAL
+   ========================================================================== */
+
+/* Contenedor principal de la biblioteca de PDFs */
+.pdf-library-container {
+  padding: 2rem; /* Espaciado interno general */
+  min-height: 100vh; /* Altura mínima para ocupar toda la pantalla */
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); /* Fondo con degradado */
+  height: 100vh; /* Altura fija para ocupar toda la pantalla */
+  overflow-y: auto; /* Permite scroll vertical si el contenido excede la altura */
+  scroll-behavior: smooth; /* Scroll suave al navegar con anclas (si aplica) */
+  scrollbar-width: thin; /* Ancho del scrollbar (para Firefox) */
+  scrollbar-color: var(--primary-color) var(--bg-secondary); /* Color del scrollbar (para Firefox) */
+  padding-top: calc(32px + 2rem); /* Ajuste para la barra de título personalizada (32px) más el padding normal */
+}
+
+/* Estilos del scrollbar para navegadores WebKit (Chrome, Safari, Edge) */
+.pdf-library-container::-webkit-scrollbar {
+  width: 8px; /* Ancho del scrollbar */
+}
+
+.pdf-library-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary); /* Color del riel del scrollbar */
+  border-radius: 4px; /* Bordes redondeados para el riel */
+}
+
+.pdf-library-container::-webkit-scrollbar-thumb {
+  background: var(--primary-color); /* Color del pulgar del scrollbar */
+  border-radius: 4px; /* Bordes redondeados para el pulgar */
+}
+
+/* ==========================================================================
+   2. CABECERA DE LA BIBLIOTECA (Título y Botones Principales)
+   ========================================================================== */
+
+/* Contenedor de la cabecera principal de la biblioteca */
+.library-header {
+  display: flex; /* Layout flexible para alinear elementos */
+  justify-content: space-between; /* Espacio entre el título y los botones */
+  align-items: center; /* Alineación vertical centrada */
+  margin-bottom: 2rem; /* Margen inferior */
+  padding-bottom: 1rem; /* Espaciado inferior interno */
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1); /* Línea divisoria sutil */
+}
+
+/* Título principal de la biblioteca */
+.library-header h1 {
+  font-size: 2.5rem; /* Tamaño de fuente grande */
+  background: linear-gradient(45deg, var(--primary-color), #6366f1); /* Fondo con degradado para el texto */
+  -webkit-background-clip: text; /* Recorta el fondo al área del texto (para WebKit) */
+  background-clip: text; /* Recorta el fondo al área del texto (estándar) */
+  color: transparent; /* Hace el color del texto transparente para mostrar el fondo */
+  animation: titleGlow 2s ease-in-out infinite alternate; /* Animación de brillo sutil */
+}
+
+/* Contenedor para los botones en la cabecera */
+.header-buttons {
+  display: flex; /* Layout flexible */
+  gap: 1rem; /* Espacio entre botones */
+}
+
+/* Estilo base para los botones de "Crear Biblioteca" y "Subir PDF" en la cabecera */
+.create-library-button,
+.upload-button { /* Esta clase .upload-button se usa también para el label del input file más abajo */
+  padding: 0.75rem 1.5rem; /* Espaciado interno */
+  border: none; /* Sin borde por defecto */
+  border-radius: 12px; /* Bordes redondeados */
+  font-weight: 600; /* Peso de la fuente */
+  cursor: pointer; /* Cursor de mano */
+  display: flex; /* Para alinear icono y texto */
+  align-items: center; /* Alineación vertical centrada */
+  min-width: 160px; /* Ancho mínimo fijo para ambos botones */
+  justify-content: center; /* Centrar contenido horizontalmente */
+  margin: 0; /* Eliminar márgenes externos */
+  white-space: nowrap; /* Evitar que el texto se rompa en múltiples líneas */
+  gap: 0.5rem; /* Espacio entre icono y texto */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transición suave para efectos hover */
+  background: rgba(255, 255, 255, 0.1); /* Fondo semitransparente (efecto cristal) */
+  backdrop-filter: blur(10px); /* Desenfoque del fondo (efecto cristal) */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil para el efecto cristal */
+  color: rgb(27, 24, 24); /* Color del texto por defecto para estos botones */
+}
+
+/* Efecto hover para los botones de la cabecera */
+.create-library-button:hover,
+.upload-button:hover { /* Aplica también al label .upload-button */
+  transform: translateY(-2px); /* Mover ligeramente hacia arriba */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Sombra para dar profundidad */
+  background: var(--primary-color); /* Cambio de color de fondo */
+  color: rgb(59, 46, 46); /* Asegura que el texto siga siendo blanco o el deseado */
+}
+
+/* Contenedor específico para el botón de subida de PDF (si se necesita diferenciar del .upload-button genérico) */
+.pdf-upload-button {
+  margin: 1rem 0; /* Margen vertical */
+  text-align: right; /* Alineación del contenido (si lo tuviera además del label) */
+  /* Este contenedor parece usarse para el input file oculto y su label estilizado como .upload-button */
+}
+
+/* Estilo para el label que actúa como botón de subida (repite/complementa .upload-button) */
+/* Si .upload-button ya define todo, esta regla podría ser para ajustes específicos del label */
+.upload-button { /* Esta es la segunda definición de .upload-button, asegurar que complemente o sea contextual */
+  display: inline-flex; /* Asegura que se comporte como un botón en línea */
+  /* Las demás propiedades (padding, background, etc.) deberían heredarse de la primera definición o ser específicas aquí */
+}
+
+.upload-button:hover {
+  /* Las propiedades hover ya están definidas arriba, esta podría ser para sobreescribir o añadir algo específico */
+  background: var(--primary-color-dark); /* Ejemplo: un color más oscuro en hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra diferente en hover */
+}
+
+
+/* ==========================================================================
+   3. PANEL DE ESTADÍSTICAS
+   ========================================================================== */
+
+/* Contenedor del panel de estadísticas */
+.stats-panel {
+  display: grid; /* Layout de rejilla */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Columnas responsivas */
+  gap: 1.5rem; /* Espacio entre tarjetas de estadísticas */
+  margin-bottom: 2rem; /* Margen inferior */
+  padding: 1rem; /* Espaciado interno */
+  background: rgba(255, 255, 255, 0.05); /* Fondo semitransparente */
+  border-radius: 16px; /* Bordes redondeados */
+  backdrop-filter: blur(10px); /* Efecto cristal */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+  animation: slideDown 0.5s ease-out forwards; /* Animación de entrada */
+}
+
+/* Tarjeta individual de estadística */
+.stat-card {
+  display: flex; /* Para alinear icono e información */
+  align-items: center; /* Alineación vertical centrada */
+  gap: 1.5rem; /* Espacio entre icono e info */
+  padding: 1.5rem; /* Espaciado interno */
+  background: rgba(255, 255, 255, 0.05); /* Fondo semitransparente */
+  border-radius: 12px; /* Bordes redondeados */
+  transition: all 0.3s ease; /* Transición suave para efectos */
+}
+
+.stat-card:hover {
+  transform: translateY(-2px); /* Mover ligeramente hacia arriba en hover */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Sombra para dar profundidad */
+}
+
+/* Icono dentro de la tarjeta de estadística */
+.stat-card i {
+  font-size: 2.5rem; /* Tamaño del icono */
+  color: var(--primary-color); /* Color del icono */
+  animation: float 3s ease-in-out infinite; /* Animación de flotación */
+}
+
+/* Contenedor de la información (título y valor) en la tarjeta de estadística */
+.stat-info h3 {
+  margin: 0; /* Sin margen por defecto */
+  font-size: 0.9rem; /* Tamaño de fuente para el título de la estadística */
+  color: var(--text-secondary); /* Color del texto */
+  margin-bottom: 0.5rem; /* Margen inferior */
+}
+
+.stat-info p {
+  margin: 0; /* Sin margen por defecto */
+  font-size: 1.5rem; /* Tamaño de fuente para el valor de la estadística */
+  color: var(--text-primary); /* Color del texto */
+  font-weight: 600; /* Peso de la fuente */
+}
+
+/* ==========================================================================
+   4. GRID DE BIBLIOTECAS Y TARJETAS DE BIBLIOTECA
+   ========================================================================== */
+
+/* Contenedor del grid para todas las bibliotecas */
+.libraries-grid {
+  display: grid; /* Layout de rejilla */
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr)); /* Columnas responsivas */
+  gap: 1rem; /* Espacio entre tarjetas de biblioteca */
+  padding: 0 rem; /* Espaciado interno (puede ser redundante si .pdf-library-container ya tiene suficiente) */
+  margin: 2rem 0; /* Margen vertical */
+}
+
+/* Estilos para la tarjeta de una biblioteca individual */
+/* Definición 1 de .library-card (base) */
+.library-card {
+  background: var(--surface-color); /* Color de fondo */
+  border-radius: var(--border-radius-md); /* Bordes redondeados */
+  margin-bottom: 1rem; /* Margen inferior */
+  box-shadow: var(--shadow-sm); /* Sombra suave */
+  overflow: hidden; /* Oculta contenido que sobresale (importante para animaciones o imágenes) */
+  transition: all 0.3s ease; /* Transición para efectos hover */
+  position: relative; /* Necesario para pseudo-elementos o hijos posicionados absolutamente */
+}
+
+/* Definición 2 de .library-card (con efecto cristal y hover) */
+/* Esta definición parece más elaborada y podría ser la principal o una variante. */
+/* Si ambas son necesarias, el orden importa o deben usarse clases modificadoras. */
+.library-card { /* Segunda definición, puede sobreescribir o complementar la anterior */
+  background: rgba(255, 255, 255, 0.05); /* Fondo con efecto cristal */
+  border-radius: 16px; /* Bordes más redondeados */
+  padding: 1.5rem; /* Espaciado interno (diferente al de la primera definición si esa no tenía padding) */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde para efecto cristal */
+  backdrop-filter: blur(10px); /* Desenfoque para efecto cristal */
+  margin-bottom: 1.5rem; /* Margen inferior diferente */
+}
+
+/* Efecto de brillo al pasar el ratón sobre la tarjeta de biblioteca */
+.library-card::before {
+  content: ''; /* Necesario para pseudo-elementos */
+  position: absolute; /* Posicionamiento absoluto respecto a la tarjeta */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent); /* Degradado para el brillo */
+  transform: translateX(-100%); /* Inicialmente fuera de la vista a la izquierda */
+  transition: transform 0.5s; /* Transición para el movimiento del brillo */
+}
+
+.library-card:hover::before {
+  transform: translateX(100%); /* Mueve el brillo a través de la tarjeta */
+}
+
+/* Efecto hover general para la tarjeta de biblioteca (complementa el brillo) */
+.library-card:hover {
+  transform: translateY(-5px) scale(1.02); /* Mover y escalar ligeramente */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+}
+
+/* Evita doble margen en la última tarjeta */
+.library-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Cabecera clickeable dentro de la tarjeta de biblioteca (para expandir/contraer) */
+.library-header-card {
+  display: flex; /* Layout flexible */
+  align-items: center; /* Alineación vertical centrada */
+  padding: 1.5rem; /* Espaciado interno (ajustar si .library-card ya tiene padding) */
+  cursor: pointer; /* Cursor de mano */
+  transition: background-color 0.2s ease; /* Transición para el color de fondo */
+}
+
+.library-header-card:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* Color de fondo en hover (sutil si la tarjeta ya es semitransparente) */
+  /* background-color: var(--background-alt); */ /* Alternativa de la primera definición de :hover */
+}
+
+/* Portada de la biblioteca (imagen o placeholder) */
+/* Definición 1 de .library-cover (más pequeña, para la cabecera de tarjeta) */
+.library-cover {
+  position: relative; /* Para posicionar el botón de subida de imagen */
+  width: 80px; /* Ancho fijo */
+  height: 80px; /* Alto fijo */
+  border-radius: 12px; /* Bordes redondeados */
+  overflow: hidden; /* Oculta partes de la imagen que excedan */
+  background: var(--background-alt); /* Color de fondo si no hay imagen */
+  display: flex; /* Para centrar el icono placeholder */
+  align-items: center;
+  justify-content: center;
+  /* margin-bottom: 1rem; */ /* Comentado, puede ser específico de un layout */
+  /* color: white; */ /* Comentado, puede ser específico */
+  /* font-size: 3rem; */ /* Comentado, para el icono placeholder */
+}
+
+/* Definición 2 de .library-cover (más grande, quizás para una vista detallada o un estilo diferente) */
+.library-cover { /* Segunda definición, puede sobreescribir o complementar */
+  width: 100%; /* Ancho completo (del contenedor padre) */
+  height: 160px; /* Alto mayor */
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); /* Fondo con degradado */
+  color: white; /* Color para el icono placeholder */
+  font-size: 3rem; /* Tamaño del icono placeholder */
+  margin-bottom: 1rem; /* Margen inferior */
+}
+
+/* Imagen dentro de la portada de la biblioteca */
+.library-cover img {
+  width: 100%; /* Ocupa todo el ancho del contenedor .library-cover */
+  height: 100%; /* Ocupa toda la altura */
+  object-fit: cover; /* Escala la imagen para cubrir el contenedor, puede recortar */
+  transition: transform 0.3s ease; /* Transición para efecto hover */
+}
+
+.library-cover:hover img {
+  transform: scale(1.05); /* Escala la imagen ligeramente en hover */
+}
+
+/* Icono placeholder dentro de .library-cover (si no hay imagen) */
+.library-cover i { /* Estilo para el icono (ej. fas fa-book-open) */
+  font-size: 1.8rem; /* Tamaño del icono (para la versión pequeña de .library-cover) */
+  color: var(--text-secondary);
+  /* font-size: 3rem; */ /* Tamaño para la versión grande de .library-cover */
+  /* color: var(--primary-color); */ /* Color para la versión grande */
+  /* animation: float 3s ease-in-out infinite; */ /* Animación para la versión grande */
+}
+
+/* Botón para subir/cambiar imagen de portada de la biblioteca */
+/* Definición 1 (pequeña, para .library-cover de 80x80) */
+.upload-image-button {
+  position: absolute; /* Posicionamiento absoluto dentro de .library-cover */
+  bottom: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%; /* Botón circular */
+  background: rgba(0, 0, 0, 0.6); /* Fondo semitransparente */
+  backdrop-filter: blur(4px); /* Efecto cristal */
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0; /* Oculto por defecto, aparece en hover */
+  transform: translateY(5px); /* Ligeramente desplazado hacia abajo */
+  transition: all 0.2s ease; /* Transición suave */
+}
+
+/* Definición 2 (más grande, para .library-cover de 160px de alto) */
+.library-cover .upload-image-button { /* Selector más específico */
+  bottom: 10px;
+  right: 10px;
+  padding: 8px; /* Más padding, resultando en un botón más grande */
+  background: rgba(0, 0, 0, 0.7); /* Ligeramente diferente */
+  /* Las demás propiedades (border-radius, color, etc.) se heredarían o definirían aquí */
+}
+
+/* Icono dentro del botón de subida de imagen */
+.upload-image-button i {
+  font-size: 0.9rem; /* Tamaño del icono */
+  color: white; /* Color del icono */
+}
+
+/* Efecto hover para el botón de subida de imagen */
+.upload-image-button:hover {
+  background: var(--primary-color); /* Cambio de color de fondo */
+  transform: scale(1.1); /* Escalar ligeramente (puede necesitar ajustar el translateY si se combina) */
+}
+
+/* Aparece el botón de subida cuando se hace hover sobre la portada */
+.library-cover:hover .upload-image-button {
+  opacity: 1; /* Hacer visible */
+  transform: translateY(0); /* Volver a su posición original (para la versión pequeña) */
+}
+
+/* Estilo para la imagen cuando se está cargando una nueva (efecto visual) */
+.image-loading {
+  opacity: 0.5; /* Reduce la opacidad de la imagen actual */
+  transition: opacity 0.3s ease; /* Transición suave */
+}
+
+/* Información de la biblioteca (nombre, descripción, estadísticas) */
+.library-info {
+  padding: 1.2rem; /* Espaciado interno */
+  /* flex: 1; */ /* Si .library-header-card es flex, esto haría que ocupe el espacio restante */
+}
+
+.library-info h3 {
+  margin: 0 0 0.5rem 0; /* Margen inferior para el título */
+  color: var(--text-primary); /* Color del título */
+  font-size: 1.2rem; /* Tamaño de fuente del título */
+}
+
+.library-info p {
+  margin: 0; /* Sin margen para la descripción */
+  color: var(--text-secondary); /* Color de la descripción */
+  font-size: 0.9rem; /* Tamaño de fuente de la descripción */
+  line-height: 1.4; /* Altura de línea */
+}
+
+/* Estadísticas dentro de la tarjeta de biblioteca (ej. número de PDFs, fecha) */
+.library-stats {
+  display: flex; /* Layout flexible */
+  justify-content: space-between; /* Espacio entre elementos de estadísticas */
+  padding: 0.5rem 1.2rem; /* Espaciado (puede ser redundante si .library-info ya tiene padding) */
+  background: var(--bg-primary); /* Color de fondo */
+  border-top: 1px solid var(--border-color); /* Línea divisoria superior */
+}
+
+.library-stats small {
+  color: var(--text-secondary); /* Color del texto de estadísticas */
+  font-size: 0.8rem; /* Tamaño de fuente */
+}
+
+/* Icono para expandir/contraer el contenido de la biblioteca */
+.library-expand-icon {
+  margin-left: auto; /* Empuja el icono a la derecha */
+  padding: 0 1rem; /* Espaciado horizontal */
+  color: var(--text-secondary); /* Color del icono */
+  transition: transform 0.3s ease; /* Transición para la rotación */
+}
+
+.library-expand-icon i {
+  font-size: 1.2rem; /* Tamaño del icono (chevron) */
+  transition: transform 0.3s ease; /* Transición para la rotación del icono interno si es diferente */
+}
+
+/* Rotación del icono cuando la biblioteca está expandida */
+.library-header-card[aria-expanded="true"] .library-expand-icon i { /* Más específico para el icono interno */
+  transform: rotate(180deg);
+}
+/* .library-header-card[aria-expanded="true"] .library-expand-icon { // Menos específico, podría rotar el contenedor del icono
+  transform: rotate(180deg);
+} */
+
+
+/* Contenido desplegable de la biblioteca (lista de PDFs) */
+/* Definición 1 de .library-content */
+.library-content {
+  max-height: 0; /* Inicialmente colapsado */
+  opacity: 0; /* Inicialmente invisible */
+  overflow: hidden; /* Oculta el contenido que excede */
+  transition: all 0.3s ease-out; /* Transición suave para todas las propiedades */
+  background: var(--background-alt); /* Color de fondo */
+  pointer-events: none; /* Deshabilita interacciones cuando está colapsado */
+  visibility: hidden; /* Oculta completamente (mejor para accesibilidad que display:none con transiciones) */
+}
+
+.library-content.expanded {
+  max-height: 2000px; /* Altura máxima suficientemente grande para el contenido */
+  opacity: 1; /* Totalmente visible */
+  visibility: visible; /* Hacer visible */
+  pointer-events: auto; /* Habilitar interacciones */
+  padding: 1rem; /* Espaciado interno */
+  border-top: 1px solid var(--border-color); /* Línea divisoria superior */
+}
+
+/* Definición 2 de .library-content (con transición de 'height') */
+/* Esta definición es más específica para la animación de altura. */
+.library-content { /* Segunda definición */
+  height: 0; /* Colapsado usando height */
+  opacity: 0;
+  overflow: hidden;
+  transition: height 0.3s ease-out, opacity 0.3s ease-out; /* Transiciones separadas */
+  background: var(--background-alt);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.library-content.expanded { /* Segunda definición */
+  height: auto; /* Altura automática según el contenido */
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  padding: 1.5rem; /* Padding diferente */
+  border-top: 1px solid var(--border-color); /* Línea divisoria superior */
+}
+
+
+/* ==========================================================================
+   5. LISTA/GRID DE PDFs (Dentro de una Biblioteca Expandida)
+   ========================================================================== */
+
+/* Contenedor para la lista de PDFs dentro de una biblioteca */
+/* Definición 1 de .pdf-list */
+.pdf-list {
+  padding: 1rem; /* Espaciado interno */
+  border-top: 1px solid var(--border-color); /* Línea divisoria (puede ser redundante si .library-content.expanded ya la tiene) */
+  margin-top: 1.5rem; /* Margen superior */
+  background: rgba(0,0,0,0.1); /* Fondo oscuro semitransparente */
+  border-radius: 12px; /* Bordes redondeados */
+}
+
+.pdf-list h4 { /* Título "PDFs en esta biblioteca:" */
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+/* Contenedor alternativo para la sección de PDFs */
+.pdfs-section {
+  background: var(--surface-color); /* Fondo diferente */
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.pdfs-section h4 {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pdfs-section h4 i {
+  color: var(--primary-color);
+}
+
+/* Grid para mostrar las tarjetas de PDF */
+/* Definición 1 de .pdf-grid */
+.pdf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Columnas responsivas, tamaño mínimo 180px */
+  gap: 1.5rem; /* Espacio entre tarjetas de PDF */
+  padding: 1rem; /* Espaciado interno (puede ser redundante si .pdf-list o .library-content ya lo tienen) */
+  /* margin-top: 1rem; */ /* Redundante si .pdf-list ya tiene margen */
+}
+
+/* Definición 2 de .pdf-grid (tamaño mínimo 200px) */
+.pdf-grid { /* Segunda definición */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Columnas con mínimo 200px */
+}
+
+
+/* Tarjeta individual para un PDF */
+/* Definición 1 de .pdf-card */
+.pdf-card {
+  position: relative; /* Para posicionar elementos hijos (ej. .pdf-actions) */
+  background: var(--surface-color); /* Color de fondo */
+  border-radius: 12px; /* Bordes redondeados */
+  overflow: hidden; /* Oculta contenido que sobresale */
+  transition: all 0.3s ease; /* Transición para efectos */
+  border: 1px solid var(--border-color); /* Borde sutil */
+  display: flex; /* Para layout interno si es necesario (ej. si no es solo vertical) */
+  flex-direction: column; /* Asegura que el contenido fluya verticalmente */
+  height: 100%; /* Para que todas las tarjetas en un grid tengan la misma altura si el contenido varía */
+  animation: fadeInUp 0.5s ease forwards; /* Animación de entrada */
+  opacity: 0; /* Inicialmente invisible para la animación */
+}
+
+.pdf-card:hover {
+  transform: translateY(-5px); /* Mover ligeramente hacia arriba */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+}
+
+/* Portada/Miniatura del PDF */
+/* Definición 1 de .pdf-cover (para PDF) */
+.pdf-cover { /* Esta clase .pdf-cover es para la miniatura del PDF, diferente de .library-cover */
+  position: relative; /* Para elementos hijos posicionados absolutamente */
+  width: 100%; /* Ancho completo de la tarjeta */
+  padding-top: 141.42%; /* Proporción A4 (altura = 141.42% del ancho) para mantener aspect-ratio */
+  background: var(--background-alt); /* Color de fondo si no hay miniatura */
+  overflow: hidden; /* Oculta partes de la miniatura que excedan */
+  /* border-radius: 8px; */ /* Redondeo de bordes (puede ser solo en la parte superior si .pdf-card ya tiene) */
+}
+
+/* Imagen de la miniatura del PDF */
+.pdf-thumbnail {
+  position: absolute; /* Posicionamiento absoluto dentro de .pdf-cover */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Escala la imagen para cubrir, puede recortar */
+  transition: transform 0.3s ease; /* Transición para efecto hover */
+}
+
+.pdf-card:hover .pdf-thumbnail {
+  transform: scale(1.05); /* Escala la miniatura en hover */
+}
+
+/* Placeholder si no hay miniatura de PDF */
+.pdf-thumbnail-placeholder {
+  position: absolute; /* Posicionamiento absoluto dentro de .pdf-cover */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex; /* Para centrar el icono */
+  align-items: center;
+  justify-content: center;
+  background: var(--background-alt); /* Color de fondo del placeholder */
+  /* background: linear-gradient(135deg, var(--background-alt) 0%, var(--surface-color) 100%); */ /* Alternativa con degradado */
+}
+
+.pdf-thumbnail-placeholder i {
+  font-size: 2rem; /* Tamaño del icono placeholder (ej. fas fa-file-pdf) */
+  color: var(--text-muted);
+  /* font-size: 3rem; */ /* Alternativa de tamaño */
+  /* color: var(--primary-color); */ /* Alternativa de color */
+  /* opacity: 0.5; */ /* Alternativa de opacidad */
+}
+
+/* Información del PDF (título, metadatos) */
+/* Definición 1 de .pdf-info (para PDF) */
+.pdf-info {
+  padding: 1rem; /* Espaciado interno */
+  background: var(--surface-color); /* Color de fondo */
+  /* border-top: 1px solid var(--border-color); */ /* Borde superior (puede ser redundante si .pdf-card lo maneja) */
+  flex-grow: 1; /* Permite que esta sección crezca si .pdf-card es flex y tiene espacio extra */
+  display: flex; /* Para control de layout interno */
+  flex-direction: column; /* Contenido vertical */
+  /* flex: 1; */ /* Si es parte de .pdf-item que es flex */
+}
+
+/* Título del PDF */
+/* Definición 1 de .pdf-title */
+.pdf-title {
+  margin: 0 0 0.5rem 0; /* Margen inferior */
+  font-size: 0.9rem; /* Tamaño de fuente */
+  font-weight: 600; /* Peso de la fuente */
+  color: var(--text-primary); /* Color del texto */
+  line-height: 1.4; /* Altura de línea */
+  overflow: hidden; /* Oculta texto que excede */
+  text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
+  white-space: nowrap; /* Evita que el texto salte a la siguiente línea */
+  /* flex: 1; */ /* Si es parte de .pdf-item */
+}
+
+/* Metadatos del PDF (tamaño, fecha) */
+.pdf-meta {
+  margin-top: auto; /* Empuja los metadatos hacia abajo si .pdf-info es flex y tiene espacio */
+  padding-top: 0.5rem; /* Espaciado superior */
+  border-top: 1px solid var(--border-color); /* Línea divisoria */
+  color: var(--text-secondary); /* Color del texto */
+  font-size: 0.8rem; /* Tamaño de fuente */
+  display: flex; /* Para alinear elementos de metadatos */
+  flex-direction: column; /* Metadatos en columna (ej. tamaño arriba, fecha abajo) */
+  gap: 0.25rem; /* Espacio entre elementos de metadatos */
+  /* justify-content: space-between; */ /* Alternativa si los metadatos van en una sola línea */
+  /* align-items: center; */ /* Alternativa */
+}
+
+.pdf-meta span { /* Cada línea de metadato */
+  display: flex; /* Para alinear icono y texto del metadato */
+  align-items: center;
+  gap: 0.5rem; /* Espacio entre icono y texto */
+}
+
+.pdf-meta i { /* Icono del metadato */
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  opacity: 0.7; /* Opacidad para el icono */
+}
+
+/* Acciones para el PDF (botones de descargar, abrir, eliminar, etc.) */
+/* Definición 1 de .pdf-actions */
+.pdf-actions {
+  position: absolute; /* Posicionamiento absoluto (generalmente dentro de .pdf-card o .pdf-cover) */
+  top: 0.5rem; /* Distancia desde arriba */
+  right: 0.5rem; /* Distancia desde la derecha */
+  display: flex; /* Layout flexible para los botones */
+  gap: 0.5rem; /* Espacio entre botones */
+  opacity: 0; /* Oculto por defecto, aparece en hover */
+  transition: opacity 0.2s ease, transform 0.3s ease; /* Transiciones suaves */
+  z-index: 10; /* Asegura que esté por encima de otros elementos */
+  /* transform: translateY(-10px); */ /* Efecto de entrada alternativo */
+  /* margin-top: 0.5rem; */ /* Si no es posicionado absolutamente */
+}
+
+.pdf-card:hover .pdf-actions { /* Mostrar acciones al hacer hover en la tarjeta PDF */
+  opacity: 1; /* Hacer visible */
+  transform: translateY(0); /* Volver a su posición (si se usa el efecto de entrada) */
+}
+/* .pdf-item:hover .pdf-actions { // Alternativa si se usa .pdf-item
+  opacity: 1;
+} */
+
+
+/* Botón de acción individual para PDF */
+/* Definición 1 de .btn-action */
+.btn-action {
+  width: 32px; /* Ancho */
+  height: 32px; /* Alto */
+  border-radius: 50%; /* Botón circular */
+  border: none; /* Sin borde */
+  background: rgba(0, 0, 0, 0.7); /* Fondo semitransparente oscuro */
+  color: white; /* Color del icono */
+  cursor: pointer; /* Cursor de mano */
+  display: flex; /* Para centrar el icono */
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease; /* Transición suave */
+  backdrop-filter: blur(4px); /* Efecto cristal */
+  /* Las siguientes propiedades son de una definición diferente, pueden necesitar fusionarse o ser contextuales */
+  /* padding: 0.4rem 0.6rem; */
+  /* border-radius: var(--radius-sm); */ /* Diferente border-radius */
+  /* background: var(--surface-color); */ /* Diferente fondo */
+  /* color: var(--text-primary); */ /* Diferente color de texto/icono */
+  /* gap: 0.25rem; */
+  /* font-size: 0.8rem; */ /* Si el botón contiene texto además de icono */
+}
+
+.btn-action:hover {
+  background: var(--primary-color); /* Cambio de color de fondo en hover */
+  transform: scale(1.1); /* Escalar ligeramente */
+  /* background: var(--background-hover); */ /* Alternativa de fondo en hover */
+}
+
+/* Estilo específico para el botón de eliminar en hover */
+.btn-action.delete:hover { /* Asumiendo que el botón de eliminar tiene la clase 'delete' */
+  background: var(--error-color); /* Color de error en hover */
+}
+/* .btn-delete:hover { // Alternativa si .btn-delete es una clase separada
+  background: var(--danger-color);
+  color: white;
+} */
+
+
+/* Estilos para un elemento de PDF en una lista (alternativa a .pdf-card) */
+.pdf-item {
+  display: flex; /* Layout flexible */
+  align-items: center; /* Alineación vertical */
+  padding: 1rem; /* Espaciado interno */
+  margin-bottom: 0.75rem; /* Margen inferior */
+  background: rgba(255, 255, 255, 0.05); /* Fondo semitransparente */
+  border-radius: 8px; /* Bordes redondeados */
+  transition: all 0.3s ease; /* Transición suave */
+  animation: slideIn 0.3s ease-out forwards; /* Animación de entrada */
+  /* justify-content: space-between; */ /* Si se quiere espacio entre título y acciones */
+  /* border-bottom: 1px solid var(--border-color); */ /* Si es una lista con divisores */
+}
+
+.pdf-item:hover {
+  background: rgba(255, 255, 255, 0.1); /* Cambio de fondo en hover */
+  transform: translateX(5px); /* Mover ligeramente a la derecha */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+}
+
+.pdf-item i { /* Icono al inicio del .pdf-item (ej. icono de tipo de archivo) */
+  color: var(--primary-color);
+  margin-right: 0.75rem; /* Margen a la derecha del icono */
+  font-size: 1.1rem;
+}
+
+/* Botones de acción específicos para .pdf-item (si son diferentes de .btn-action) */
+.btn-open, /* Clase para botón de abrir */
+.btn-delete { /* Clase para botón de eliminar */
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white; /* Color de texto/icono común */
+}
+
+.btn-open {
+  background: var(--primary-color); /* Fondo para botón de abrir */
+}
+
+.btn-delete {
+  background: var(--error-color); /* Fondo para botón de eliminar */
+}
+
+.btn-open:hover,
+.btn-delete:hover {
+  transform: translateY(-2px); /* Mover ligeramente hacia arriba */
+  filter: brightness(110%); /* Aumentar brillo */
+}
+
+.btn-open:active,
+.btn-delete:active {
+  transform: translateY(0); /* Efecto de presionado */
+}
+
+
+/* ==========================================================================
+   6. MODALES Y FORMULARIOS
+   ========================================================================== */
+
+/* Overlay oscuro para el fondo de los modales */
+.modal-overlay {
+  position: fixed; /* Posicionamiento fijo para cubrir toda la pantalla */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7); /* Fondo oscuro semitransparente */
+  backdrop-filter: blur(5px); /* Desenfoque del contenido detrás del modal */
+  display: flex; /* Para centrar el contenido del modal */
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Asegura que esté por encima de otros contenidos */
+  animation: fadeIn 0.3s ease-out; /* Animación de aparición */
+}
+
+/* Contenido del modal */
+.modal-content {
+  position: relative; /* Para posicionar el botón de cerrar */
+  width: 100%; /* Ancho responsivo */
+  max-width: 600px; /* Ancho máximo */
+  max-height: 90vh; /* Altura máxima responsiva */
+  overflow-y: auto; /* Scroll vertical si el contenido excede */
+  background: var(--bg-primary); /* Color de fondo del modal */
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2); /* Sombra pronunciada */
+  border: 1px solid var(--border-color); /* Borde sutil */
+  border-radius: 20px; /* Bordes redondeados */
+  padding: 2rem; /* Espaciado interno */
+  animation: slideUp 0.3s ease-out; /* Animación de aparición */
+}
+
+/* Botón para cerrar el modal */
+.close-button {
+  position: absolute; /* Posicionamiento absoluto dentro de .modal-content */
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  background: #f3f4f6; /* Color de fondo (puede necesitar ajuste a variables CSS) */
+  border: 1px solid #e5e7eb; /* Borde (puede necesitar ajuste) */
+  border-radius: 50%; /* Botón circular */
+  color: #6b7280; /* Color del icono (puede necesitar ajuste) */
+  cursor: pointer;
+  font-size: 1.2rem; /* Tamaño del icono de cerrar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease; /* Transición suave */
+  z-index: 1; /* Asegura que esté por encima del contenido del modal si hay superposición */
+}
+
+.close-button:hover {
+  background: #e5e7eb; /* Cambio de fondo en hover */
+  color: #1f2937; /* Cambio de color del icono */
+  transform: rotate(90deg); /* Rotación del icono en hover */
+  border-color: #d1d5db; /* Cambio de color del borde */
+}
+
+.close-button:active {
+  transform: rotate(90deg) scale(0.95); /* Efecto de presionado */
+}
+
+/* Estilos para formularios dentro de los modales (ej. crear biblioteca, asignar PDF) */
+.library-form { /* Asumiendo que esta clase se usa en los formularios de los modales */
+  /* Espaciado o estilos específicos del formulario si son necesarios */
+}
+
+.library-form h2 { /* Título del formulario */
+  margin-bottom: 1.5rem; /* Espacio debajo del título */
+  text-align: center; /* Centrar título */
+  color: var(--text-primary); /* Color del texto */
+}
+
+/* Grupo de formulario (label + input/select/textarea) */
+.form-group {
+  margin-bottom: 1.5rem; /* Espacio entre grupos de formulario */
+}
+
+.form-group label {
+  display: block; /* Label en su propia línea */
+  margin-bottom: 0.5rem; /* Espacio debajo del label */
+  font-weight: 500; /* Peso de la fuente del label */
+  color: var(--text-secondary);
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select { /* Estilos comunes para inputs, textarea y select */
+  width: 100%; /* Ancho completo */
+  padding: 0.75rem; /* Espaciado interno */
+  border: 1px solid var(--border-color); /* Borde */
+  border-radius: 8px; /* Bordes redondeados */
+  background: var(--bg-primary); /* Color de fondo (puede necesitar ser más claro que el modal) */
+  color: var(--text-primary); /* Color del texto */
+  font-size: 1rem; /* Tamaño de fuente */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group textarea:focus,
+.form-group select:focus { /* Estilos al enfocar */
+  outline: none; /* Quitar outline por defecto */
+  border-color: var(--primary-color); /* Cambiar color del borde */
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1); /* Sombra sutil (asumiendo --primary-color-rgb) */
+}
+
+.form-group textarea {
+  resize: vertical; /* Permitir redimensionar solo verticalmente */
+  min-height: 80px; /* Altura mínima para textarea */
+}
+
+.form-group select {
+  cursor: pointer; /* Cursor de mano para select */
+}
+
+/* Mensaje de error dentro del formulario */
+.form-error {
+  background-color: rgba(var(--error-color-rgb), 0.1); /* Fondo de error (asumiendo --error-color-rgb) */
+  color: var(--error-color); /* Texto de error */
+  padding: 0.75rem;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1rem;
+  border: 1px solid rgba(var(--error-color-rgb), 0.3);
+  font-size: 0.9rem;
+}
+
+/* Botón de envío del formulario */
+.submit-button {
+  width: 100%; /* Ancho completo */
+  padding: 0.85rem; /* Espaciado interno */
+  background: var(--primary-color); /* Color de fondo */
+  color: white; /* Color del texto */
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: var(--primary-color-dark); /* Color más oscuro en hover */
+}
+
+.submit-button:active:not(:disabled) {
+  transform: scale(0.98); /* Efecto de presionado */
+}
+
+.submit-button:disabled {
+  opacity: 0.6; /* Opacidad reducida cuando está deshabilitado */
+  cursor: not-allowed; /* Cursor no permitido */
+}
+
+/* Estilo para mostrar el nombre del archivo seleccionado en el modal de asignación */
+.selected-file {
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-color);
+}
+
+
+/* ==========================================================================
+   7. ESTADOS (Carga, Vacío, etc.)
+   ========================================================================== */
+
+/* Estado de carga general (ej. cargando bibliotecas) */
+.loading-state {
+  display: flex; /* Para centrar contenido */
+  flex-direction: column; /* Contenido en columna */
+  align-items: center;
+  justify-content: center;
+  min-height: 200px; /* Altura mínima para que sea visible */
+  text-align: center;
+  padding: 3rem; /* Espaciado */
+  color: var(--text-secondary); /* Color del texto */
+}
+
+.loading-state i { /* Icono de spinner */
+  font-size: 2.5rem; /* Tamaño del icono */
+  color: var(--primary-color); /* Color del icono */
+  animation: spin 1s linear infinite; /* Animación de rotación */
+  margin-bottom: 1rem; /* Espacio debajo del icono */
+}
+
+.loading-state p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* Estado vacío (ej. no hay bibliotecas, no hay PDFs) */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary); /* Fondo sutil */
+  border-radius: 12px;
+  border: 2px dashed var(--border-color); /* Borde discontinuo */
+}
+
+.empty-state i { /* Icono para el estado vacío */
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary); /* O un color temático */
+}
+
+.empty-state p {
+  margin: 0.5rem 0; /* Espaciado para los párrafos */
+  font-size: 1.1rem;
+}
+
+/* Botón específico para crear la primera biblioteca en el estado vacío */
+.create-first-library {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.create-first-library:hover {
+  background: var(--primary-color-dark);
+  transform: translateY(-2px);
+}
+
+/* Mensaje cuando no hay PDFs en una biblioteca */
+.no-pdfs {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 1rem; /* O más, ej. 2rem */
+  font-size: 0.9rem;
+  /* background: var(--background-alt); */ /* Opcional: fondo si se quiere destacar */
+  /* border-radius: 8px; */ /* Opcional */
+}
+
+/* ==========================================================================
+   8. BARRA DE TÍTULO PERSONALIZADA (Electron)
+   ========================================================================== */
+
+.titlebar {
+  -webkit-app-region: drag; /* Permite arrastrar la ventana desde esta barra */
+  height: 32px; /* Altura fija de la barra de título */
+  background: var(--bg-primary); /* Color de fondo */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Botones a la derecha */
+  padding: 0 1rem; /* Espaciado horizontal */
+  position: fixed; /* Fija en la parte superior */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Por encima de otros contenidos (excepto modales de mayor z-index) */
+}
+
+.titlebar-buttons {
+  -webkit-app-region: no-drag; /* Asegura que los botones sean clickeables y no arrastren la ventana */
+  display: flex;
+  gap: 0.5rem; /* Espacio entre botones de la barra de título */
+}
+
+.titlebar-button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent; /* Botones transparentes por defecto */
+  color: var(--text-secondary); /* Color del icono */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease; /* Transición suave */
+}
+
+.titlebar-button:hover {
+  background: rgba(255, 255, 255, 0.1); /* Fondo sutil en hover */
+  color: var(--text-primary); /* Cambio de color del icono */
+}
+
+.titlebar-button.close:hover { /* Estilo específico para el botón de cerrar en hover */
+  background: #e81123; /* Rojo estándar para cerrar en Windows */
+  color: white;
+}
+
+/* ==========================================================================
+   9. ESTILOS DE TOAST (Notificaciones)
+   ========================================================================== */
+
+/* Estos estilos dependen de cómo se implemente react-toastify y sus clases por defecto. */
+/* Si se usan clases personalizadas al llamar a toast(), se deben usar esas clases aquí. */
+.toast-success { /* Asumiendo que se añade esta clase o se sobreescribe la de la librería */
+  background: var(--success-color) !important; /* Fondo de éxito */
+  color: white !important; /* Texto blanco para contraste */
+}
+
+.toast-error { /* Asumiendo que se añade esta clase o se sobreescribe la de la librería */
+  background: var(--error-color) !important; /* Fondo de error */
+  color: white !important; /* Texto blanco para contraste */
+}
+
+/* ==========================================================================
+   10. ANIMACIONES (@keyframes)
+   ========================================================================== */
+
+@keyframes titleGlow { /* Animación de brillo para el título principal */
+  0% {
+    text-shadow: 0 0 10px rgba(var(--primary-color-rgb), 0.2); /* Sombra inicial (asumiendo --primary-color-rgb) */
+  }
+  100% {
+    text-shadow: 0 0 20px rgba(var(--primary-color-rgb), 0.4); /* Sombra final más intensa */
+  }
+}
+
+@keyframes float { /* Animación de flotación para iconos */
+  0%, 100% {
+    transform: translateY(0); /* Posición inicial y final */
+  }
+  50% {
+    transform: translateY(-10px); /* Posición intermedia (flotando hacia arriba) */
+  }
+}
+
+@keyframes slideIn { /* Animación de entrada deslizando desde la izquierda */
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn { /* Animación de aparición gradual */
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp { /* Animación de entrada deslizando desde abajo */
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin { /* Animación de rotación continua (para spinners) */
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes imageLoading { /* Animación para placeholder de imagen cargando (ej. degradado móvil) */
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes slideDown { /* Animación de entrada deslizando desde arriba */
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp { /* Animación de aparición deslizando desde abajo (sutil) */
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   FIN DEL ARCHIVO CSS
+   ========================================================================== */

@@ -1,0 +1,48 @@
+.download-button {
+    background-color: var(--primary-color, #4CAF50);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.download-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background-color: var(--primary-color-dark, #45a049);
+}
+
+.download-button:disabled {
+    background-color: var(--disabled-color, #cccccc);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.download-button.downloading {
+    opacity: 0.7;
+}
+
+.download-button .loading-icon {
+    animation: spin 1s linear infinite;
+}
+
+.download-button .download-icon {
+    font-size: 16px;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

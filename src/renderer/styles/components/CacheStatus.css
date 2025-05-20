@@ -1,0 +1,146 @@
+.cache-status {
+    background: var(--surface-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.cache-info h3 {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-primary);
+}
+
+.cache-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm);
+    background: var(--background-secondary);
+    border-radius: var(--border-radius-sm);
+}
+
+.cache-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.cache-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    transition: background 0.2s;
+}
+
+.cache-button.refresh {
+    background: var(--primary-color);
+    color: white;
+}
+
+.cache-button.clear {
+    background: var(--error-color);
+    color: white;
+}
+
+.cache-button:hover {
+    opacity: 0.9;
+}
+
+.cache-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cache-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.cache-loading {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.cache-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--background-secondary);
+    border-radius: 2px;
+    margin-bottom: var(--spacing-md);
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.cache-progress.visible {
+    opacity: 1;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: width 0.3s ease-in-out;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 4px;
+    transition: width 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: shine 1.5s infinite;
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Iconos en modo claro */
+[data-theme="light"] .loading-text i,
+[data-theme="light"] .cache-button i {
+    color: var(--text-primary);
+}
+
+@keyframes shine {
+    to {
+        left: 100%;
+    }
+}

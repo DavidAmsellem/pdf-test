@@ -1,0 +1,134 @@
+.signature-container {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.signature {
+    margin-top: -50px;
+    width: 120px;
+    height: 100px;
+    color: var(--primary-color);
+    opacity: 0.6;
+}
+
+/* Sombra del libro */
+.book-shadow {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    opacity: 0.2;
+    animation: shadowPulse 3s ease-in-out infinite;
+}
+
+/* Portada del libro */
+.book-cover {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: drawBook 2s ease forwards;
+}
+
+/* Lomo del libro */
+.book-spine {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: drawBook 1.5s ease forwards 0.3s;
+}
+
+
+
+/* Páginas */
+.book-pages {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-dasharray: 500;
+    stroke-dashoffset: 500;
+    animation: drawBook 2s ease forwards 1.2s;
+    opacity: 0.6;
+}
+
+/* Título */
+.book-title {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: drawBook 1s ease forwards 1.5s;
+    opacity: 0.8;
+}
+
+/* Marcador */
+.book-bookmark {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: drawBook 1s ease forwards 1.8s;
+    opacity: 0.7;
+}
+
+@keyframes drawBook {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes shadowPulse {
+    0%, 100% {
+        transform: scaleX(1);
+        opacity: 0.2;
+    }
+    50% {
+        transform: scaleX(0.95);
+        opacity: 0.3;
+    }
+}
+
+/* Efecto de brillo */
+.signature::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(var(--primary-color-rgb), 0.2),
+        transparent
+    );
+    animation: shine 2s linear infinite;
+}
+
+@keyframes shine {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+/* Efecto hover mejorado */
+.signature:hover .book-cover,
+.signature:hover .book-spine,
+.signature:hover .book-pages,
+.signature:hover .book-title,
+.signature:hover .book-bookmark,
+.signature:hover .book-spine-details {
+    animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        filter: drop-shadow(0 0 2px rgba(var(--primary-color-rgb), 0.5));
+    }
+    to {
+        filter: drop-shadow(0 0 4px rgba(var(--primary-color-rgb), 0.8));
+    }
+}

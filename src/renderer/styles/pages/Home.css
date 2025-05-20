@@ -1,0 +1,181 @@
+/* Contenedor principal de la página de inicio */
+.home-container {
+  padding: var(--spacing-lg); /* Espaciado interno grande */
+}
+
+/* Sección de bienvenida con título y descripción */
+.welcome-section {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Icono grande de la sección de bienvenida */
+.welcome-section i {
+  font-size: 4rem; /* Tamaño grande para el icono */
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Título principal de bienvenida */
+.welcome-section h1 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Texto descriptivo de bienvenida */
+.welcome-section p {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+}
+
+/* Grid de estadísticas con 3 tarjetas */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Grid responsive */
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  background: var(--surface-color);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme='dark'] .stats-grid {
+  background: #ffffff;
+}
+
+/* Tarjetas individuales de estadísticas */
+.stat-card {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* Añadido para centrar horizontalmente */
+  gap: 1rem;
+  transition: transform 0.2s ease;
+}
+
+[data-theme='dark'] .stat-card {
+  background: #f8f9fa11;
+  color: #ffffff;
+}
+
+/* Efecto hover en las tarjetas de estadísticas */
+.stat-card:hover {
+  transform: translateY(-5px); /* Elevación al pasar el mouse */
+}
+
+/* Información dentro de las tarjetas de estadísticas */
+.stat-info {
+  text-align: center;  /* Centra el texto */
+  display: flex;
+  flex-direction: column;
+  align-items: center;  /* Centra los elementos hijos verticalmente */
+  justify-content: center;  /* Centra los elementos hijos horizontalmente */
+  flex: 1;
+}
+
+/* Títulos y texto dentro de las tarjetas de estadísticas */
+.stat-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.stat-info p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.stat-info small {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Iconos dentro de las tarjetas de estadísticas */
+.stat-card i {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme='dark'] .stat-card i {
+  color: #6366f1;
+}
+
+/* Números grandes en las estadísticas */
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+[data-theme='dark'] .stat-number {
+  color: #6366f1;
+}
+
+[data-theme='dark'] .stat-card h3,
+[data-theme='dark'] .stat-card p {
+  color: #ffffff;
+}
+
+/* Sección de acciones rápidas */
+.quick-actions {
+  background: var(--surface-color);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Título de la sección de acciones rápidas */
+.quick-actions h2 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+/* Grid de botones de acciones rápidas */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Grid responsive de botones */
+  gap: var(--spacing-md);
+}
+
+/* Botones de acciones rápidas */
+.actions-grid button {
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: var(--background-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all var (--transition-fast);
+}
+
+/* Efecto hover en los botones */
+.actions-grid button:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.cache-section {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: var(--background-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.stats-dashboard {
+    margin-bottom: 2rem;
+}

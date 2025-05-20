@@ -1,0 +1,235 @@
+.email-status-list {
+    max-height: calc(100vh - 200px); /* Ajusta según el espacio disponible */
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.email-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+.email-card {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.email-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.email-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.document-info h4 {
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+[data-theme='light'] {
+    .status-ongoing { background: #fff3e0; color: #e65100; }
+    .status-completed { background: #e8f5e9; color: #2e7d32; }
+    .status-refused { background: #ffebee; color: #c62828; }
+    .status-expired { background: #f5f5f5; color: #616161; }
+    .status-initiated { background: #e3f2fd; color: #1565c0; }
+    .status-unknown { background: #f5f5f5; color: #757575; }
+}
+
+[data-theme='dark'] {
+    .status-ongoing { background: rgba(230, 81, 0, 0.2); color: #ffb74d; }
+    .status-completed { background: rgba(46, 125, 50, 0.2); color: #81c784; }
+    .status-refused { background: rgba(198, 40, 40, 0.2); color: #ef5350; }
+    .status-expired { background: rgba(97, 97, 97, 0.2); color: #bdbdbd; }
+    .status-initiated { background: rgba(21, 101, 192, 0.2); color: #64b5f6; }
+    .status-unknown { background: rgba(117, 117, 117, 0.2); color: #9e9e9e; }
+}
+
+.email-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.email-details {
+    margin-top: 10px;
+}
+
+.email-details p {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+}
+
+.email-details i {
+    color: var(--text-secondary);
+    width: 16px;
+}
+
+.loading-container {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+.signers-list, .events-timeline {
+    margin-top: 15px;
+    padding: 10px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.signers-list h5, .events-timeline h5 {
+    margin: 0 0 10px 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.signer-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.signer-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.signer-email {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.signer-status {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.signer-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 8px 0;
+    padding: 10px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.signer-info:hover {
+    background: var(--bg-secondary);
+    transform: translateX(2px);
+}
+
+.event-info {
+    color: var(--text-secondary);
+}
+
+.event-info i {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.document-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.download-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.download-button:hover {
+    background-color: #45a049;
+}
+
+.download-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.download-button i {
+    font-size: 1rem;
+}
+
+/* Estilo para el contenedor padre si existe */
+.signing-log-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Estilo para la barra de desplazamiento */
+.email-status-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.email-status-list::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.email-status-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.email-status-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}

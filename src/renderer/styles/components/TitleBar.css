@@ -1,0 +1,96 @@
+.titlebar {
+    height: 32px;
+    background: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    -webkit-app-region: drag;
+    user-select: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-bottom: 10px;
+    z-index: 9999;
+}
+
+.titlebar-drag-region {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-md);
+}
+
+.window-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.9rem;
+}
+
+.window-title i {
+    color: white;
+    font-size: 1.1rem;
+}
+
+.window-controls {
+    display: flex;
+    -webkit-app-region: no-drag;
+    background: var(--bg-secondary);
+}
+
+.window-control {
+    width: 46px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+[data-theme='light'] .window-control {
+    color: black;
+}
+
+[data-theme='dark'] .window-control {
+    color: white;
+}
+
+[data-theme='light'] .window-control:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: black;
+}
+
+[data-theme='dark'] .window-control:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+[data-theme='light'] .window-control.minimize:hover,
+[data-theme='light'] .window-control.maximize:hover {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .window-control.minimize:hover,
+[data-theme='dark'] .window-control.maximize:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.window-control.close:hover {
+    background-color: #e81123;
+    color: white;
+}
+
+.window-control i {
+    font-size: 0.8rem;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

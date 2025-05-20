@@ -1,0 +1,425 @@
+.auth-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Altura total de la ventana */
+    /* Gradiente de fondo diagonal */
+    background: linear-gradient(135deg, var(--primary-color) 0%, #2c3e50 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efecto de partículas en el fondo */
+.auth-wrapper::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: moveBackground 60s linear infinite;
+    opacity: 0.3;
+}
+
+@keyframes moveBackground {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-50%, -50%); }
+}
+
+/* Barra de título personalizada */
+.auth-title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2); /* Fondo semi-transparente */
+    backdrop-filter: blur(10px); /* Efecto de cristal esmerilado */
+    color: white;
+    padding: 0.75rem 1.25rem;
+    -webkit-app-region: drag; /* Permite arrastrar la ventana */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 3;
+}
+
+.title-text {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Controles de ventana (minimizar, cerrar) */
+.window-controls {
+    display: flex;
+    -webkit-app-region: no-drag; /* Permite hacer clic en los botones */
+    gap: 0.25rem;
+}
+
+.window-control {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 0.5rem;
+}
+
+.window-control:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.window-control.close:hover {
+    background-color: #dc3545;
+}
+
+/* Contenedor del formulario de autenticación */
+.auth-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
+}
+
+/* Tarjeta del formulario */
+.auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 420px;
+    animation: cardAppear 0.6s ease-out;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes cardAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cabecera del formulario con icono y título */
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header i {
+    font-size: 3.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    position: relative;
+}
+
+.auth-header i::after {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, rgba(var(--primary-color-rgb), 0.2) 0%, transparent 70%);
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.auth-header h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Grupos de campos del formulario */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+    width: 90%;
+}
+
+/* Etiquetas de los campos */
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+/* Campos de entrada */
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(var(--primary-color-rgb), 0.1);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.form-group:focus-within label {
+    color: var(--primary-color);
+}
+
+/* Estado de error en los inputs */
+.input-error {
+    border-color: #dc3545 !important;
+    animation: shakeError 0.5s ease-in-out;
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+@keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+}
+
+/* Mensaje de error */
+.auth-error {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    font-size: 0.9rem;
+    animation: shakeError 0.5s ease-in-out;
+}
+
+/* Botón principal de autenticación */
+.btn-auth {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-auth::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.btn-auth:hover::before {
+    left: 100%;
+}
+
+.btn-auth:hover {
+    background: var(--primary-color-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.btn-auth:active {
+    transform: translateY(0);
+}
+
+.btn-auth:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-auth i {
+    margin-right: 0.5rem;
+}
+
+/* Botón secundario para cambiar entre login y registro */
+.btn-switch {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 1rem;
+    margin-top: 0; /* Removemos el margen superior */
+    width: 100%;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-switch:hover {
+    color: var(--primary-color-dark);
+    text-decoration: underline;
+}
+
+/* Añadir variables de color necesarias */
+:root {
+    --primary-color-rgb: 52, 152, 219; /* Color principal en formato RGB */
+    --primary-color-dark: #2980b9; /* Variante oscura del color principal */
+}
+
+.auth-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Añade estos estilos al final del archivo */
+
+/* Contenedor de iconos flotantes */
+.floating-icons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Animación para los iconos */
+.floating-icon {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.1);
+    animation: floatIcon 15s linear infinite;
+    opacity: 0;
+}
+
+@keyframes floatIcon {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.2;
+    }
+    90% {
+        opacity: 0.2;
+    }
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Diferentes tamaños y velocidades para los iconos */
+.floating-icon:nth-child(1) { font-size: 2rem; left: 10%; animation-delay: 0s; }
+.floating-icon:nth-child(2) { font-size: 3rem; left: 20%; animation-delay: 2s; }
+.floating-icon:nth-child(3) { font-size: 1.5rem; left: 30%; animation-delay: 4s; }
+.floating-icon:nth-child(4) { font-size: 2.5rem; left: 40%; animation-delay: 6s; }
+.floating-icon:nth-child(5) { font-size: 2rem; left: 50%; animation-delay: 8s; }
+.floating-icon:nth-child(6) { font-size: 3rem; left: 60%; animation-delay: 10s; }
+.floating-icon:nth-child(7) { font-size: 1.5rem; left: 70%; animation-delay: 12s; }
+.floating-icon:nth-child(8) { font-size: 2.5rem; left: 80%; animation-delay: 14s; }
+
+/* Añade estos estilos al archivo Auth.css */
+
+.floating-icons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Estilo base para los iconos flotantes */
+.floating-icon {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.9);
+    animation: floatUp 20s linear infinite;
+    bottom: -20px;
+}
+
+/* Animación para los iconos flotantes */
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 400;
+    }
+    10% {
+        opacity: 30;
+    }
+    90% {
+        opacity: 40;
+    }
+    100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 200;
+    }
+}
+
+/* Configuración individual de cada icono */
+.floating-icon:nth-child(1) { font-size: 24px; left: 10%; animation-delay: 0s; }
+.floating-icon:nth-child(2) { font-size: 32px; left: 25%; animation-delay: 3s; }
+.floating-icon:nth-child(3) { font-size: 20px; left: 40%; animation-delay: 6s; }
+.floating-icon:nth-child(4) { font-size: 28px; left: 55%; animation-delay: 9s; }
+.floating-icon:nth-child(5) { font-size: 22px; left: 70%; animation-delay: 12s; }
+.floating-icon:nth-child(6) { font-size: 30px; left: 85%; animation-delay: 15s; }
+.floating-icon:nth-child(7) { font-size: 26px; left: 15%; animation-delay: 18s; }
+.floating-icon:nth-child(8) { font-size: 24px; left: 75%; animation-delay: 21s; }
+
+/* Asegurarnos que los iconos estén detrás del contenido */
+.auth-container {
+    position: relative;
+    z-index: 2;
+}
+
+.auth-title-bar {
+    position: relative;
+    z-index: 3;
+}

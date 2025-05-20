@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+/node_modules
+package-lock.json
+
+# Build y Cache
+/dist
+/dist_electron
+/build
+.cache/
+*.cache
+
+# Archivos de ambiente
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos de distribución
+*.exe
+app.asar
+resources.pak
+*.pak
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Cache específico de la app
+/src/cache/*
+!src/cache/.gitkeep
