@@ -39,6 +39,8 @@ const PDFLibrary = () => {
     const fileInputRef = useRef(null);
     const [showNewLibraryForm, setShowNewLibraryForm] = useState(false);
     const [newLibraryData, setNewLibraryData] = useState({ name: '', description: '' });
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [libraryToDelete, setLibraryToDelete] = useState(null);
 
     const filteredAndSortedLibraries = useMemo(() => {
         let result = [...libraries];
@@ -405,6 +407,56 @@ const PDFLibrary = () => {
     };
 
     /**
+     * Elimina una biblioteca y todos sus PDFs asociados.
+     * @param {string} libraryId - ID de la biblioteca a eliminar.
+     */
+    const handleDeleteLibrary = async (libraryId) => {
+        if (!window.confirm('¿Estás seguro de que quieres eliminar esta biblioteca? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // Primero eliminamos todos los PDFs asociados a la biblioteca
+            const { data: pdfs } = await supabase
+                .from('pdfs')
+                .select('storage_key')
+                .eq('library_id', libraryId);
+
+            // Eliminamos los archivos del storage
+            if (pdfs && pdfs.length > 0) {
+                for (const pdf of pdfs) {
+                    await supabase.storage
+                        .from('pdfs')
+                        .remove([pdf.storage_key]);
+                }
+            }
+
+            // Eliminamos la biblioteca
+            const { error } = await supabase
+                .from('libraries')
+                .delete()
+                .eq('id', libraryId);
+
+            if (error) throw error;
+
+            // Actualizamos el estado local
+            setLibraries(prevLibraries => 
+                prevLibraries.filter(lib => lib.id !== libraryId)
+            );
+
+            toast.success('Biblioteca eliminada correctamente');
+
+        } catch (error) {
+            console.error('Error al eliminar biblioteca:', error);
+            toast.error('Error al eliminar la biblioteca');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
      * Formatea bytes a un string legible (KB, MB, GB).
      * @param {number} bytes - Número de bytes.
      * @returns {string} - Tamaño formateado.
@@ -705,21 +757,19 @@ const PDFLibrary = () => {
                                                 <small><i className="fas fa-calendar"></i> {new Date(library.created_at).toLocaleDateString()}</small>
                                             </div>
                                         </div>
-                                        
-                                        {/* Indicador de drop */}
-                                        <div 
-                                            className="drop-indicator"
-                                            onClick={(e) => handleDropAreaClick(e, library.id)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <span>
-                                                <i className="fas fa-file-upload"></i>
-                                                {' '}Suelta o haz clic para añadir PDF
-                                            </span>
-                                        </div>
-                                        
-                                        <div className="library-expand-icon">
-                                            <i className={`fas fa-chevron-${expandedLibrary === library.id ? 'up' : 'down'}`}></i>
+                                        <div className="library-actions">
+                                            <button 
+                                                className="btn-action delete"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setLibraryToDelete(library.id);
+                                                    setShowDeleteModal(true);
+                                                }}
+                                                disabled={loading}
+                                                title="Eliminar biblioteca"
+                                            >
+                                                <i className="fas fa-trash-alt"></i>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -895,6 +945,40 @@ const PDFLibrary = () => {
                                     </div>
                                 </form>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal de Confirmación de Eliminación */}
+                {showDeleteModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content">
+                            <h2>¿Eliminar biblioteca?</h2>
+                            <p>Esta acción eliminará permanentemente la biblioteca y todos sus PDFs. Esta acción no se puede deshacer.</p>
+                            
+                            <div className="modal-actions">
+                                <button 
+                                    className="cancel-button"
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setLibraryToDelete(null);
+                                    }}
+                                    disabled={loading}
+                                >
+                                    Cancelar
+                                </button>
+                                <button 
+                                    className="delete-button"
+                                    onClick={() => {
+                                        handleDeleteLibrary(libraryToDelete);
+                                        setShowDeleteModal(false);
+                                        setLibraryToDelete(null);
+                                    }}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Eliminando...' : 'Eliminar'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

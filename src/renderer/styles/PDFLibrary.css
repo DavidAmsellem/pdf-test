@@ -815,10 +815,7 @@
   transform: rotate(90deg) scale(0.95); /* Efecto de presionado */
 }
 
-/* Estilos para formularios dentro de los modales (ej. crear biblioteca, asignar PDF) */
-.library-form { /* Asumiendo que esta clase se usa en los formularios de los modales */
-  /* Espaciado o estilos específicos del formulario si son necesarios */
-}
+
 
 .library-form h2 { /* Título del formulario */
   margin-bottom: 1.5rem; /* Espacio debajo del título */
