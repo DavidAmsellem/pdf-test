@@ -37,6 +37,8 @@ const PDFLibrary = () => {
     const [dragOverLibrary, setDragOverLibrary] = useState(null);
     // Añadir ref para el input de archivo
     const fileInputRef = useRef(null);
+    const [showNewLibraryForm, setShowNewLibraryForm] = useState(false);
+    const [newLibraryData, setNewLibraryData] = useState({ name: '', description: '' });
 
     const filteredAndSortedLibraries = useMemo(() => {
         let result = [...libraries];
@@ -196,6 +198,37 @@ const PDFLibrary = () => {
         } catch (err) {
             console.error('Error al crear biblioteca:', err);
             setError(err.message || 'Error desconocido al crear la biblioteca.');
+            toast.error('Error al crear la biblioteca');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Crea una nueva biblioteca y la selecciona.
+     * @param {Event} e - Evento del formulario.
+     */
+    const handleCreateNewLibrary = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        
+        try {
+            const { data: newLibrary, error } = await databaseService.createLibrary({
+                name: newLibraryData.name,
+                description: newLibraryData.description,
+                userId: user.id
+            });
+
+            if (error) throw error;
+
+            setLibraries(prev => [...prev, newLibrary]);
+            setSelectedLibrary(newLibrary.id);
+            setShowNewLibraryForm(false);
+            setNewLibraryData({ name: '', description: '' });
+            toast.success('Biblioteca creada correctamente');
+            
+        } catch (error) {
+            console.error('Error al crear biblioteca:', error);
             toast.error('Error al crear la biblioteca');
         } finally {
             setLoading(false);
@@ -771,39 +804,97 @@ const PDFLibrary = () => {
                                     setSelectedFile(null);
                                     setSelectedLibrary('');
                                     setError(null);
+                                    setShowNewLibraryForm(false);
                                     document.getElementById('pdf-upload').value = null;
                                 }}
                                 title="Cerrar asignación de PDF"
                             >
                                 <i className="fas fa-times"></i>
                             </button>
-                            <form onSubmit={handleAssignPdf} className="library-form">
-                                <h2>Asignar PDF a Biblioteca</h2>
-                                <div className="form-group">
-                                    <p className="selected-file">Archivo seleccionado: <strong>{selectedFile?.name || 'Ninguno'}</strong></p>
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="library">Seleccionar Biblioteca*</label>
-                                    <select
-                                        id="library"
-                                        value={selectedLibrary}
-                                        onChange={(e) => setSelectedLibrary(e.target.value)}
-                                        required
-                                        disabled={loading}
-                                    >
-                                        <option value="">Selecciona una biblioteca</option>
-                                        {libraries.map(library => (
-                                            <option key={library.id} value={library.id}>
-                                                {library.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                {error && <div className="form-error">{error}</div>}
-                                <button type="submit" className="submit-button" disabled={loading || !selectedLibrary}>
-                                    {loading ? 'Asignando...' : 'Asignar PDF'}
-                                </button>
-                            </form>
+                            
+                            {!showNewLibraryForm ? (
+                                <form onSubmit={handleAssignPdf} className="library-form">
+                                    <h2>Asignar PDF a Biblioteca</h2>
+                                    <div className="form-group">
+                                        <p className="selected-file">
+                                            Archivo seleccionado: <strong>{selectedFile?.name || 'Ninguno'}</strong>
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="form-group">
+                                        <label>Seleccionar Biblioteca</label>
+                                        <div className="library-selection">
+                                            <select
+                                                value={selectedLibrary}
+                                                onChange={(e) => setSelectedLibrary(e.target.value)}
+                                                required
+                                                disabled={loading}
+                                            >
+                                                <option value="">Selecciona una biblioteca</option>
+                                                {libraries.map(library => (
+                                                    <option key={library.id} value={library.id}>
+                                                        {library.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button 
+                                                type="button"
+                                                className="new-library-button"
+                                                onClick={() => setShowNewLibraryForm(true)}
+                                            >
+                                                <i className="fas fa-plus"></i> Nueva Biblioteca
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    {error && <div className="form-error">{error}</div>}
+                                    <button type="submit" className="submit-button" disabled={loading || !selectedLibrary}>
+                                        {loading ? 'Asignando...' : 'Asignar PDF'}
+                                    </button>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleCreateNewLibrary} className="library-form">
+                                    <h2>Crear Nueva Biblioteca</h2>
+                                    <div className="form-group">
+                                        <label htmlFor="name">Nombre*</label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            value={newLibraryData.name}
+                                            onChange={(e) => setNewLibraryData(prev => ({ ...prev, name: e.target.value }))}
+                                            required
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="description">Descripción</label>
+                                        <textarea
+                                            id="description"
+                                            value={newLibraryData.description}
+                                            onChange={(e) => setNewLibraryData(prev => ({ ...prev, description: e.target.value }))}
+                                            rows="3"
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    <div className="form-actions">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewLibraryForm(false)}
+                                            className="cancel-button"
+                                            disabled={loading}
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="submit-button"
+                                            disabled={loading || !newLibraryData.name.trim()}
+                                        >
+                                            {loading ? 'Creando...' : 'Crear y Seleccionar'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </div>
                     </div>
                 )}

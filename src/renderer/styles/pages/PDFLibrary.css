@@ -1318,3 +1318,52 @@
 .library-header-card.expanded .library-expand-icon i {
     transform: rotate(180deg);
 }
+
+/* Estilos para el formulario de asignación de PDF */
+.library-selection {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.library-selection select {
+    flex: 1;
+}
+
+.new-library-button {
+    padding: 0.75rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.new-library-button:hover {
+    background: var(--primary-color-dark);
+    transform: translateY(-1px);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.cancel-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+    background: var(--bg-hover);
+}
