@@ -46,11 +46,39 @@ function getLocalMetadataPath() {
 }
 
 // Función para crear ventana principal
+let mainWindow;
+let splashWindow;
+
+function createSplashWindow() {
+    splashWindow = new BrowserWindow({
+        width: 400,
+        height: 400,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        center: true,
+        skipTaskbar: true,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true
+        }
+    });
+
+    // Cargar la página de splash
+    splashWindow.loadFile(path.join(__dirname, '../renderer/splash.html'));
+
+    // Ocultar menú en producción
+    if (process.env.NODE_ENV !== 'development') {
+        splashWindow.setMenuBarVisibility(false);
+    }
+}
+
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
-    height: 800,
+    height: 900,
     frame: false,
+    icon: path.join(__dirname, '../assets/icon.ico'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
@@ -60,15 +88,15 @@ function createWindow() {
 
   // Modifica esta parte para cargar correctamente en desarrollo y producción
   if (process.env.NODE_ENV === 'development') {
-    win.loadURL('http://localhost:3000');
+    mainWindow.loadURL('http://localhost:3000');
   } else {
-    win.loadFile(path.join(__dirname, '../../dist/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'));
   }
 
   // Para debug
-  win.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
-  return win;
+  return mainWindow;
 }
 
 // Función auxiliar para crear directorios
@@ -114,13 +142,40 @@ function downloadFile(url, destPath) {
 }
 
 // Inicialización de la aplicación
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+    // Crear y mostrar la ventana de splash
+    createSplashWindow();
+
+    // Esperar un momento para mostrar la animación de carga
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Crear la ventana principal
+    createWindow();
+
+    // Esperar a que la ventana principal cargue completamente
+    mainWindow.webContents.on('did-finish-load', () => {
+        // Dar tiempo para que se complete la animación de aparición
+        setTimeout(() => {
+            if (splashWindow) {
+                // Animación de desvanecimiento
+                splashWindow.webContents.executeJavaScript(`
+                    document.querySelector('.splash-container').style.animation = 'fadeOut 0.5s ease-in forwards';
+                `);
+                
+                // Cerrar después de la animación
+                setTimeout(() => {
+                    splashWindow.close();
+                    splashWindow = null;
+                }, 500);
+            }
+        }, 500);
+    });
+
     console.log('Variables de entorno cargadas:', {
         YOUSIGN_API_KEY: process.env.YOUSIGN_API_KEY ? 'Presente' : 'No encontrada',
         NODE_ENV: process.env.NODE_ENV,
         // Otras variables relevantes...
     });
-    createWindow();
 });
 
 app.on('window-all-closed', () => {

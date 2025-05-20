@@ -38,6 +38,15 @@ export const AuthProvider = ({ children }) => {
 
     const handleSignOut = async () => {
         try {
+            // Primero limpiamos la caché
+            try {
+                await window.electronAPI.clearCache();
+                console.log('Caché limpiado exitosamente al cerrar sesión');
+            } catch (cacheError) {
+                console.error('Error al limpiar caché durante el cierre de sesión:', cacheError);
+            }
+
+            // Luego cerramos la sesión
             await supabase.auth.signOut();
             setUser(null);
         } catch (error) {

@@ -12,6 +12,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PDFPreloader from './components/PDFPreloader';
 import DocumentSigningLog from './components/sign/DocumentSigningLog';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import SplashScreen from './components/SplashScreen';
 
 function App() {
     const [currentView, setCurrentView] = useState('home');
@@ -40,33 +42,38 @@ function App() {
     return (
         <AuthProvider>
             <ThemeProvider>
-                <div className="app" data-theme={darkMode ? 'dark' : 'light'}>
-                    <PDFPreloader />
-                    <TitleBar />
-                    <div className="app-content">
-                        <Sidebar 
-                            onNavigate={setCurrentView} 
-                            currentView={currentView}
-                            user={user}
+                <Router>
+                    <div className="app" data-theme={darkMode ? 'dark' : 'light'}>
+                        <PDFPreloader />
+                        <TitleBar />
+                        <div className="app-content">
+                            <Sidebar 
+                                onNavigate={setCurrentView} 
+                                currentView={currentView}
+                                user={user}
+                            />
+                            <main className="main-content">
+                                <div className="content-wrapper">
+                                    {renderContent()}
+                                </div>
+                            </main>
+                        </div>
+                        <ToastContainer 
+                            position="bottom-right"
+                            autoClose={3000}
+                            hideProgressBar={false}
+                            newestOnTop
+                            closeOnClick
+                            rtl={false}
+                            pauseOnFocusLoss
+                            draggable
+                            pauseOnHover
                         />
-                        <main className="main-content">
-                            <div className="content-wrapper">
-                                {renderContent()}
-                            </div>
-                        </main>
                     </div>
-                    <ToastContainer 
-                        position="bottom-right"
-                        autoClose={3000}
-                        hideProgressBar={false}
-                        newestOnTop
-                        closeOnClick
-                        rtl={false}
-                        pauseOnFocusLoss
-                        draggable
-                        pauseOnHover
-                    />
-                </div>
+                    <Routes>
+                        <Route path="/splash" element={<SplashScreen />} />
+                    </Routes>
+                </Router>
             </ThemeProvider>
         </AuthProvider>
     );
