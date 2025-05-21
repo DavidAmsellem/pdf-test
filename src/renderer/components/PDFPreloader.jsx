@@ -22,13 +22,7 @@ const PDFPreloader = () => {
                 if (!pdfs || pdfs.length === 0) {
                     console.log('No hay PDFs para precargar');
                     return;
-                }
-
-                toast.info(`Iniciando precarga de ${pdfs.length} PDFs...`, {
-                    autoClose: 2000
-                });
-
-                console.log(`Iniciando precarga de ${pdfs.length} PDFs...`);
+                }                console.log(`Iniciando precarga de ${pdfs.length} PDFs...`);
 
                 let completados = 0;
                 let errores = 0;
@@ -59,14 +53,7 @@ const PDFPreloader = () => {
                             completados++;
                             // Actualizar el progreso
                             const newProgress = Math.round((completados + errores) * 100 / pdfs.length);
-                            setProgress(newProgress);
-
-                            // Mostrar progreso cada 25%
-                            if (newProgress % 25 === 0) {
-                                toast.info(`Progreso: ${newProgress}% (${completados} PDFs cargados)`, {
-                                    autoClose: 1000
-                                });
-                            }
+                            setProgress(newProgress);                            // El progreso ahora se muestra en la barra visual, no necesitamos toasts intermedios
 
                         } catch (error) {
                             console.error(`Error al precargar ${pdf.title}:`, error);
