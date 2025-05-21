@@ -62,10 +62,12 @@ function createSplashWindow() {
             nodeIntegration: false,
             contextIsolation: true
         }
-    });
-
-    // Cargar la página de splash
-    splashWindow.loadFile(path.join(__dirname, '../renderer/splash.html'));
+    });    // Cargar la página de splash según el entorno
+    if (process.env.NODE_ENV === 'development') {
+        splashWindow.loadFile(path.join(__dirname, '../renderer/splash.html'));
+    } else {
+        splashWindow.loadFile(path.join(__dirname, '../../dist/splash.html'));
+    }
 
     // Ocultar menú en producción
     if (process.env.NODE_ENV !== 'development') {

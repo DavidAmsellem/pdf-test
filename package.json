@@ -11,7 +11,7 @@
     "dev": "concurrently \"vite\" \"electron .\"",
     "dev:web": "vite",
     "dev:electron": "electron .",
-    "build:prod": "cross-env NODE_ENV=production vite build",
+    "build:prod": "cross-env NODE_ENV=production vite build && copy src\\assets\\icon.ico dist\\",
     "clean": "rimraf dist dist_electron",
     "test:prod": "node scripts/prod-test.js",
     "dist": "npm run clean && npm run build:prod && electron-builder",
