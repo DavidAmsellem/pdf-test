@@ -1,7 +1,6 @@
-const { app } = require('electron');
 const path = require('path');
-const fs = require('fs');
-const fsPromises = fs.promises;
+const fs = require('fs').promises;
+const { app } = require('electron');
 
 class CacheService {
     constructor() {
@@ -11,11 +10,15 @@ class CacheService {
 
     async init() {
         try {
-            await fsPromises.mkdir(this.cachePath, { recursive: true });
+            await fs.access(this.cachePath);
+        } catch {
+            await fs.mkdir(this.cachePath, { recursive: true });
             console.log('Directorio de caché creado en:', this.cachePath);
-        } catch (error) {
-            console.error('Error al crear directorio de caché:', error);
         }
+    }
+
+    getCachePath() {
+        return this.cachePath;
     }
 
     async saveToCache(pdfId, data, metadata) {
@@ -24,17 +27,17 @@ class CacheService {
             const metadataPath = path.join(this.cachePath, `${pdfId}.json`);
 
             // Verificar si el directorio existe antes de escribir
-            await fsPromises.access(this.cachePath).catch(async () => {
+            await fs.access(this.cachePath).catch(async () => {
                 await this.init();
             });
 
             // Escribir archivos con manejo de errores mejorado
             await Promise.all([
-                fsPromises.writeFile(pdfPath, data).catch(error => {
+                fs.writeFile(pdfPath, data).catch(error => {
                     console.error(`Error al guardar PDF ${pdfId}:`, error);
                     throw error;
                 }),
-                fsPromises.writeFile(metadataPath, JSON.stringify({
+                fs.writeFile(metadataPath, JSON.stringify({
                     ...metadata,
                     cachedAt: Date.now(),
                     pdfId
@@ -59,13 +62,13 @@ class CacheService {
 
             // Verificar si los archivos existen
             await Promise.all([
-                fsPromises.access(pdfPath),
-                fsPromises.access(metadataPath)
+                fs.access(pdfPath),
+                fs.access(metadataPath)
             ]);
 
             const [pdfData, metadataRaw] = await Promise.all([
-                fsPromises.readFile(pdfPath),
-                fsPromises.readFile(metadataPath, 'utf-8')
+                fs.readFile(pdfPath),
+                fs.readFile(metadataPath, 'utf-8')
             ]);
 
             const metadata = JSON.parse(metadataRaw);
@@ -94,10 +97,10 @@ class CacheService {
             const metadataPath = path.join(this.cachePath, `${pdfId}.json`);
 
             await Promise.all([
-                fsPromises.unlink(pdfPath).catch(() => {
+                fs.unlink(pdfPath).catch(() => {
                     console.log(`PDF ${pdfId} no existe en caché`);
                 }),
-                fsPromises.unlink(metadataPath).catch(() => {
+                fs.unlink(metadataPath).catch(() => {
                     console.log(`Metadata de ${pdfId} no existe en caché`);
                 })
             ]);

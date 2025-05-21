@@ -628,3 +628,16 @@ ipcMain.handle('open-external', async (event, url) => {
     }
 });
 
+ipcMain.handle('test-cache-access', async () => {
+    try {
+        const cachePath = cacheService.cachePath; // Usar la propiedad directamente
+        const testFile = path.join(cachePath, 'test.txt');
+        await fsPromises.writeFile(testFile, 'test');
+        await fsPromises.unlink(testFile);
+        return { success: true };
+    } catch (error) {
+        console.error('Error en prueba de caché:', error);
+        throw error;
+    }
+});
+

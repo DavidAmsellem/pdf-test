@@ -46,4 +46,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getYouSignApiUrl: () => ipcRenderer.invoke('get-yousign-api-url'),
     downloadSignedDocument: (procedureId) => ipcRenderer.invoke('download-signed-document', procedureId),
     openExternal: (url) => ipcRenderer.invoke('open-external', url),
+    testCacheAccess: async () => {
+        return await ipcRenderer.invoke('test-cache-access');
+    }
 });

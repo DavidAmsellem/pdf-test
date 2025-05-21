@@ -1,6 +1,8 @@
 import React from 'react';
 import { toast } from 'react-toastify';
+import SupabaseStatus from './SupabaseStatus';
 import EmailStatusList from './sign/EmailStatusList';
+import NetworkTest from './NetworkTest';
 import '../styles/sign/EmailStatusList.css';
 import '../styles/pages/Settings.css';
 
@@ -21,6 +23,11 @@ const Settings = () => {
         <div className="settings-container animate-fade-in">
             <h2><i className="fas fa-cog"></i> Ajustes</h2>
             <div className="settings-grid">
+                <div className="settings-card">
+                    <h3>Diagnóstico del Sistema</h3>
+                    <SupabaseStatus />
+                    <NetworkTest />
+                </div>
                 
                 <div className="settings-card">
                     <h3>Almacenamiento</h3>
@@ -30,11 +37,13 @@ const Settings = () => {
                             onClick={handleOpenCache}
                             className="open-folder-button"
                         >
+                            <i className="fas fa-folder-open"></i>
                             Abrir carpeta
                         </button>
                     </div>
                 </div>
-             
+
+                
             </div>
         </div>
     );
