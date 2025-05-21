@@ -60,19 +60,32 @@ function createSplashWindow() {
         skipTaskbar: true,
         webPreferences: {
             nodeIntegration: false,
-            contextIsolation: true
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
         }
-    });    // Cargar la página de splash según el entorno
+    });
+
+    // Cargar la página de splash según el entorno
+    let splashPath;
     if (process.env.NODE_ENV === 'development') {
-        splashWindow.loadFile(path.join(__dirname, '../renderer/splash.html'));
+        splashPath = path.join(__dirname, '../renderer/splash.html');
     } else {
-        splashWindow.loadFile(path.join(__dirname, '../../dist/splash.html'));
+        // En producción, los archivos están en la carpeta resources/app.asar
+        splashPath = path.join(process.resourcesPath, 'app.asar', 'src', 'renderer', 'splash.html');
     }
+
+    console.log('Cargando splash screen desde:', splashPath);
+    splashWindow.loadFile(splashPath);
 
     // Ocultar menú en producción
     if (process.env.NODE_ENV !== 'development') {
         splashWindow.setMenuBarVisibility(false);
     }
+
+    // Para depuración
+    splashWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+        console.error('Error al cargar splash screen:', errorCode, errorDescription);
+    });
 }
 
 function createWindow() {
@@ -147,6 +160,11 @@ app.whenReady().then(async () => {
     // Crear y mostrar la ventana de splash
     createSplashWindow();
 
+    // Asegurarse de que el splash screen se haya cargado completamente
+    await new Promise(resolve => {
+        splashWindow.webContents.on('did-finish-load', resolve);
+    });
+
     // Esperar un momento para mostrar la animación de carga
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -155,19 +173,32 @@ app.whenReady().then(async () => {
 
     // Esperar a que la ventana principal cargue completamente
     mainWindow.webContents.on('did-finish-load', () => {
+        console.log('Ventana principal cargada');
+        
         // Dar tiempo para que se complete la animación de aparición
         setTimeout(() => {
-            if (splashWindow) {
-                // Animación de desvanecimiento
-                splashWindow.webContents.executeJavaScript(`
-                    document.querySelector('.splash-container').style.animation = 'fadeOut 0.5s ease-in forwards';
-                `);
-                
-                // Cerrar después de la animación
-                setTimeout(() => {
-                    splashWindow.close();
-                    splashWindow = null;
-                }, 500);
+            if (splashWindow && !splashWindow.isDestroyed()) {
+                try {
+                    // Animación de desvanecimiento
+                    splashWindow.webContents.executeJavaScript(`
+                        document.querySelector('.splash-container').style.animation = 'fadeOut 0.5s ease-in forwards';
+                    `).catch(err => console.error('Error en la animación:', err));
+                    
+                    // Cerrar después de la animación
+                    setTimeout(() => {
+                        if (splashWindow && !splashWindow.isDestroyed()) {
+                            splashWindow.close();
+                            splashWindow = null;
+                        }
+                    }, 500);
+                } catch (error) {
+                    console.error('Error al cerrar splash screen:', error);
+                    // Si hay un error, intentar cerrar directamente
+                    if (splashWindow && !splashWindow.isDestroyed()) {
+                        splashWindow.close();
+                        splashWindow = null;
+                    }
+                }
             }
         }, 500);
     });

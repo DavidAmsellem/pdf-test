@@ -54,12 +54,13 @@
     "directories": {
       "output": "dist_electron",
       "buildResources": "resources"
-    },
-    "files": [
+    },    "files": [
       "dist/**/*",
       "src/main/**/*",
       "src/services/**/*",
       "src/supabase/**/*",
+      "src/assets/**/*",
+      "src/renderer/splash.html",
       "node_modules/**/*",
       ".env",
       "package.json"
