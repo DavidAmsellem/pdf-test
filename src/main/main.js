@@ -628,16 +628,31 @@ ipcMain.handle('open-external', async (event, url) => {
     }
 });
 
+// Manejador para probar el acceso a la caché (usado por NetworkTest)
 ipcMain.handle('test-cache-access', async () => {
     try {
-        const cachePath = cacheService.cachePath; // Usar la propiedad directamente
-        const testFile = path.join(cachePath, 'test.txt');
-        await fsPromises.writeFile(testFile, 'test');
-        await fsPromises.unlink(testFile);
+        const cachePath = cacheService.getCachePath();
+        
+        // Verificar que existe el directorio
+        await fs.access(cachePath);
+        
+        // Crear un archivo temporal para pruebas
+        const testFile = path.join(cachePath, `test-${Date.now()}.tmp`);
+        const testContent = Buffer.from(`Test data: ${new Date().toISOString()}`);
+        
+        // Escribir el archivo
+        await fs.writeFile(testFile, testContent);
+        
+        // Leer el archivo
+        await fs.readFile(testFile);
+        
+        // Eliminar el archivo
+        await fs.unlink(testFile);
+        
         return { success: true };
     } catch (error) {
-        console.error('Error en prueba de caché:', error);
-        throw error;
+        console.error('Error en test de caché:', error);
+        return { success: false, error: error.message };
     }
 });
 

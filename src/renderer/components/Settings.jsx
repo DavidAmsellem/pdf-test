@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import SupabaseStatus from './SupabaseStatus';
 import EmailStatusList from './sign/EmailStatusList';
 import NetworkTest from './NetworkTest';
+import NetworkDiagnostics from './NetworkDiagnostics';
 import '../styles/sign/EmailStatusList.css';
 import '../styles/pages/Settings.css';
 
@@ -26,7 +27,6 @@ const Settings = () => {
                 <div className="settings-card">
                     <h3>Diagnóstico del Sistema</h3>
                     <SupabaseStatus />
-                    <NetworkTest />
                 </div>
                 
                 <div className="settings-card">
@@ -43,7 +43,13 @@ const Settings = () => {
                     </div>
                 </div>
 
-                
+                <div className="settings-card full-width">
+                    <h3><i className="fas fa-network-wired"></i> Pruebas de Estabilidad de Red</h3>
+                    <p className="setting-description">
+                        Ejecuta un diagnóstico completo para verificar la estabilidad de la conexión y detectar posibles problemas de red.
+                    </p>
+                    <NetworkDiagnostics />
+                </div>
             </div>
         </div>
     );

@@ -1,5 +1,22 @@
 .settings-container {
   padding: var(--spacing-lg);
+  height: calc(100vh - 60px); /* Altura ajustada restando la altura del header */
+  overflow-y: auto; /* Habilitamos el scroll vertical */
+  scrollbar-width: thin; /* Para Firefox */
+  scrollbar-color: var(--primary-color) transparent; /* Para Firefox */
+}
+
+.settings-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 4px;
 }
 
 .settings-container h2 {
@@ -8,6 +25,11 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  position: sticky; /* Mantener el título visible al hacer scroll */
+  top: 0;
+  z-index: 1;
+  padding: 10px 0;
+  background: var(--bg-primary);
 }
 
 .settings-grid {
