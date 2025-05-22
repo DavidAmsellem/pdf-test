@@ -1,11 +1,10 @@
 # PDF Biblioteca
 
-Una aplicación de escritorio para gestionar y organizar bibliotecas PDF con cifrado.
+Una aplicación de escritorio para gestionar y organizar bibliotecas PDF.
 
 ## Características
 
 - 📚 Gestión de bibliotecas PDF
-- 🔒 Cifrado de documentos
 - 🎨 Interfaz moderna y responsive
 - 🌙 Modo oscuro/claro
 - 📱 Diseño adaptable
@@ -18,7 +17,7 @@ Una aplicación de escritorio para gestionar y organizar bibliotecas PDF con cif
 - Vite
 - PDF.js
 - Supabase
-- CryptoJS
+- Spring Boot (backend)
 
 ## Instalación
 
