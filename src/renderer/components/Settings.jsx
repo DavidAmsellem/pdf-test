@@ -4,6 +4,7 @@ import SupabaseStatus from './SupabaseStatus';
 import EmailStatusList from './sign/EmailStatusList';
 import NetworkTest from './NetworkTest';
 import NetworkDiagnostics from './NetworkDiagnostics';
+import DatabaseTest from './DatabaseTest';
 import '../styles/sign/EmailStatusList.css';
 import '../styles/pages/Settings.css';
 
@@ -27,6 +28,13 @@ const Settings = () => {
                 <div className="settings-card">
                     <h3>Diagnóstico del Sistema</h3>
                     <SupabaseStatus />
+                    <div className="setting-item">
+                        <h4>Pruebas de Base de Datos</h4>
+                        <p className="setting-description">
+                            Ejecuta diagnósticos para verificar el estado y rendimiento de la base de datos.
+                        </p>
+                        <DatabaseTest />
+                    </div>
                 </div>
                 
                 <div className="settings-card">

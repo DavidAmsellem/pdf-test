@@ -487,5 +487,109 @@ export const databaseService = {
             console.error('Error en getAllPDFs:', error);
             return { data: null, error };
         }
+    },
+
+    // Función de diagnóstico de la base de datos
+    runDatabaseTests: async () => {
+        const tests = [];
+        let totalScore = 0;
+        let testsRun = 0;
+
+        try {
+            // Test 1: Conexión básica
+            const startTime = Date.now();
+            const { error: connectError } = await supabase.from('libraries').select('count');
+            const latency = Date.now() - startTime;
+            
+            tests.push({
+                name: 'Conexión a la base de datos',
+                status: !connectError ? 'success' : 'error',
+                latency: latency + 'ms',
+                details: !connectError ? 'Conexión establecida correctamente' : connectError.message,
+                score: !connectError ? 100 : 0
+            });
+
+            if (!connectError) totalScore += 100;
+            testsRun++;
+
+            // Test 2: Permisos de lectura
+            const { data: readData, error: readError } = await supabase
+                .from('libraries')
+                .select('*')
+                .limit(1);
+            
+            tests.push({
+                name: 'Permisos de lectura',
+                status: !readError ? 'success' : 'error',
+                details: !readError ? 'Permisos de lectura correctos' : readError.message,
+                score: !readError ? 100 : 0
+            });
+
+            if (!readError) totalScore += 100;
+            testsRun++;
+
+            // Test 3: Storage
+            const { data: storageData, error: storageError } = await supabase.storage
+                .from('pdfs')
+                .list();
+
+            tests.push({
+                name: 'Acceso al almacenamiento',
+                status: !storageError ? 'success' : 'error',
+                details: !storageError ? 'Acceso al almacenamiento correcto' : storageError.message,
+                score: !storageError ? 100 : 0
+            });
+
+            if (!storageError) totalScore += 100;
+            testsRun++;
+
+            // Test 4: Verificar políticas RLS
+            const { data: publicData, error: rlsError } = await supabase
+                .from('libraries')
+                .select('*')
+                .limit(1)
+                .is('user_id', null);
+
+            const rlsWorking = !publicData || publicData.length === 0;
+            
+            tests.push({
+                name: 'Políticas de seguridad (RLS)',
+                status: rlsWorking ? 'success' : 'warning',
+                details: rlsWorking 
+                    ? 'Las políticas RLS están funcionando correctamente' 
+                    : 'Se detectaron posibles problemas con las políticas RLS',
+                score: rlsWorking ? 100 : 50
+            });
+
+            if (rlsWorking) totalScore += 100;
+            testsRun++;
+
+            const averageScore = Math.round(totalScore / testsRun);
+
+            return {
+                tests,
+                summary: {
+                    totalTests: testsRun,
+                    passedTests: tests.filter(t => t.status === 'success').length,
+                    averageScore,
+                    connectionLatency: latency,
+                    timestamp: new Date().toISOString()
+                },
+                error: null
+            };
+
+        } catch (error) {
+            console.error('Error en las pruebas de base de datos:', error);
+            return {
+                tests,
+                summary: {
+                    totalTests: testsRun,
+                    passedTests: tests.filter(t => t.status === 'success').length,
+                    averageScore: Math.round(totalScore / (testsRun || 1)),
+                    timestamp: new Date().toISOString()
+                },
+                error: error.message
+            };
+        }
     }
 };
