@@ -1,0 +1,132 @@
+/* Estilos para la sección de pruebas de seguridad */
+.security-test-results {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.security-score-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.security-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    color: white;
+    position: relative;
+    padding: 1rem;
+    box-shadow: var(--shadow-md);
+}
+
+.security-score .score-value {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.security-score .score-label {
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.security-score.excellent {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.security-score.good {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+}
+
+.security-score.average {
+    background: linear-gradient(135deg, #ecc94b, #d69e2e);
+}
+
+.security-score.poor {
+    background: linear-gradient(135deg, #f56565, #c53030);
+}
+
+.security-details {
+    flex: 1;
+    min-width: 300px;
+}
+
+.security-details h5 {
+    margin-top: 0;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.security-category {
+    margin-bottom: 1.5rem;
+}
+
+.security-category .category-header {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.security-category .category-header i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+.category-details table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.category-details th {
+    text-align: left;
+    padding: 0.5rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.category-details td {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.success-text {
+    color: #48bb78;
+}
+
+.warning-text {
+    color: #ecc94b;
+}
+
+.error-text {
+    color: #f56565;
+}
+
+.security-headers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.security-headers span {
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+}
+
+.security-conclusion {
+    margin-top: 1rem;
+}

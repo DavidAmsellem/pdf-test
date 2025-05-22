@@ -3,17 +3,23 @@ import { supabase } from '../../supabase/client';
 import { toast } from 'react-toastify';
 import '../styles/components/NetworkDiagnostics.css';
 import '../styles/components/RealTimeLog.css';
+import '../styles/components/SecurityTest.css';
 
 const NetworkDiagnostics = () => {
     const [testResults, setTestResults] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [detailedReport, setDetailedReport] = useState(false);
-    const [stability, setStability] = useState(null);
-    const [stressTest, setStressTest] = useState({
+    const [stability, setStability] = useState(null);    const [stressTest, setStressTest] = useState({
         running: false,
         progress: 0,
         results: null
-    });    const [realTimeLogs, setRealTimeLogs] = useState([]);
+    });
+    const [securityTest, setSecurityTest] = useState({
+        running: false,
+        progress: 0,
+        results: null
+    });
+    const [realTimeLogs, setRealTimeLogs] = useState([]);
     const [autoScroll, setAutoScroll] = useState(true);
     const logEndRef = useRef(null);
     const downloadRef = useRef(null);
@@ -438,6 +444,324 @@ const NetworkDiagnostics = () => {
             });
         }
     };
+      // Función para ejecutar pruebas de seguridad de red
+    const runSecurityTest = async () => {
+        // Configurar estado inicial
+        setSecurityTest({
+            running: true,
+            progress: 0,
+            results: null
+        });
+        
+        // Limpiar logs previos y mostrar mensaje inicial
+        setRealTimeLogs([`[${new Date().toLocaleTimeString()}] Iniciando prueba de seguridad de red...`]);
+        
+        // Crear un AbortController para poder cancelar las peticiones
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+        
+        try {
+            toast.info('Iniciando prueba de seguridad de red. Esto puede tardar hasta 20 segundos.');
+            
+            // Resultados de la prueba de seguridad
+            const securityResults = {
+                timestamp: new Date().toISOString(),
+                tlsTests: [],        // Resultados de pruebas de TLS/SSL
+                certificateTests: [], // Resultados de verificación de certificados
+                httpSecurityTests: [], // Resultados de pruebas de seguridad HTTP
+                securityScore: 0      // Puntuación global de seguridad (0-100)
+            };
+            
+            // 1. Pruebas de TLS/SSL
+            setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Verificando configuración TLS/SSL...`]);
+            setSecurityTest(prev => ({...prev, progress: 10}));
+            
+            const endpoints = [
+                { url: 'https://www.howsmyssl.com/a/check', name: 'Verificación TLS' },
+                { url: 'https://api.ssllabs.com/api/v3/info', name: 'SSL Labs API' },
+                { url: 'https://badssl.com/', name: 'Referencia de certificados' }
+            ];
+            
+            for (const endpoint of endpoints) {
+                if (signal.aborted) break;
+                
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(endpoint.url, { 
+                        signal, 
+                        method: 'GET',
+                        headers: { 'User-Agent': 'Mozilla/5.0 PDF4All Security Test' }
+                    });
+                    
+                    // Analizar respuesta para TLS
+                    let tlsVersion = 'Desconocida';
+                    let securityLevel = 'Medio';
+                    
+                    if (endpoint.url.includes('howsmyssl') && response.ok) {
+                        const data = await response.json();
+                        tlsVersion = data.tls_version || 'Desconocida';
+                        
+                        // Evaluar seguridad según versión TLS
+                        if (tlsVersion.includes('1.3')) {
+                            securityLevel = 'Alto';
+                        } else if (tlsVersion.includes('1.2')) {
+                            securityLevel = 'Medio';
+                        } else {
+                            securityLevel = 'Bajo';
+                        }
+                        
+                        securityResults.tlsTests.push({
+                            endpoint: endpoint.name,
+                            success: true,
+                            tlsVersion,
+                            securityLevel,
+                            responseTime: Date.now() - startTime
+                        });
+                        
+                        setRealTimeLogs(logs => [...logs, 
+                            `[${new Date().toLocaleTimeString()}] Versión TLS detectada: ${tlsVersion} (Nivel de seguridad: ${securityLevel})`
+                        ]);
+                    } else {
+                        securityResults.tlsTests.push({
+                            endpoint: endpoint.name,
+                            success: response.ok,
+                            statusCode: response.status,
+                            responseTime: Date.now() - startTime
+                        });
+                    }
+                } catch (error) {
+                    securityResults.tlsTests.push({
+                        endpoint: endpoint.name,
+                        success: false,
+                        error: error.message
+                    });
+                    
+                    setRealTimeLogs(logs => [...logs, 
+                        `[${new Date().toLocaleTimeString()}] Error al verificar ${endpoint.name}: ${error.message}`
+                    ]);
+                }
+                
+                // Actualizar progreso
+                setSecurityTest(prev => ({...prev, progress: Math.min(30, prev.progress + 7)}));
+            }
+            
+            // 2. Prueba de verificación de certificados
+            if (!signal.aborted) {
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Verificando certificados de seguridad...`]);
+                setSecurityTest(prev => ({...prev, progress: 35}));
+                
+                const certificateTestUrls = [
+                    { url: 'https://valid-isrgrootx1.letsencrypt.org/', name: 'Certificado válido (Let\'s Encrypt)' },
+                    { url: 'https://revoked.badssl.com/', name: 'Certificado revocado' },
+                    { url: 'https://self-signed.badssl.com/', name: 'Certificado auto-firmado' }
+                ];
+                
+                for (const certTest of certificateTestUrls) {
+                    if (signal.aborted) break;
+                    
+                    try {
+                        const startTime = Date.now();
+                        // Solo verificamos si el dominio responde, no hacemos fetch completo
+                        await fetch(certTest.url, { 
+                            signal, 
+                            method: 'HEAD',
+                            mode: 'no-cors' // Intentar conexión sin importar errores CORS
+                        });
+                        
+                        // Si llegamos aquí con self-signed o revoked, es porque el cliente no validó correctamente
+                        const isCertificateSuspicious = certTest.url.includes('badssl.com') && 
+                                                      !certTest.url.includes('valid');
+                        
+                        securityResults.certificateTests.push({
+                            url: certTest.name,
+                            validationSucceeded: true,
+                            suspicious: isCertificateSuspicious,
+                            responseTime: Date.now() - startTime
+                        });
+                        
+                        if (isCertificateSuspicious) {
+                            setRealTimeLogs(logs => [...logs, 
+                                `[${new Date().toLocaleTimeString()}] ⚠️ Advertencia: El cliente aceptó un certificado no confiable (${certTest.name})`
+                            ]);
+                        } else {
+                            setRealTimeLogs(logs => [...logs, 
+                                `[${new Date().toLocaleTimeString()}] Verificación de certificado correcta: ${certTest.name}`
+                            ]);
+                        }
+                    } catch (error) {
+                        // En caso de error con certificados no válidos, es el comportamiento esperado
+                        const isExpectedFailure = certTest.url.includes('badssl.com') && 
+                                                !certTest.url.includes('valid');
+                        
+                        securityResults.certificateTests.push({
+                            url: certTest.name,
+                            validationSucceeded: false,
+                            expectedFailure: isExpectedFailure,
+                            error: error.message
+                        });
+                        
+                        if (isExpectedFailure) {
+                            setRealTimeLogs(logs => [...logs, 
+                                `[${new Date().toLocaleTimeString()}] ✅ Correcto: Se rechazó certificado no válido (${certTest.name})`
+                            ]);
+                        } else {
+                            setRealTimeLogs(logs => [...logs, 
+                                `[${new Date().toLocaleTimeString()}] Error al verificar certificado: ${certTest.name} - ${error.message}`
+                            ]);
+                        }
+                    }
+                    
+                    // Actualizar progreso
+                    setSecurityTest(prev => ({...prev, progress: Math.min(60, prev.progress + 8)}));
+                }
+            }
+            
+            // 3. Pruebas de seguridad HTTP
+            if (!signal.aborted) {
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Analizando seguridad HTTP...`]);
+                setSecurityTest(prev => ({...prev, progress: 65}));
+                
+                // Verificar cabeceras de seguridad en varios sitios
+                const httpSecurityTestUrls = [
+                    'https://www.mozilla.org',
+                    'https://www.google.com',
+                    'https://www.github.com'
+                ];
+                
+                for (const testUrl of httpSecurityTestUrls) {
+                    if (signal.aborted) break;
+                    
+                    try {
+                        const response = await fetch(testUrl, { 
+                            signal, 
+                            method: 'HEAD' // Solo solicitar cabeceras
+                        });
+                        
+                        // Obtener y verificar cabeceras de seguridad
+                        const headers = response.headers;
+                        const securityHeaders = {
+                            'Strict-Transport-Security': headers.get('Strict-Transport-Security'),
+                            'Content-Security-Policy': headers.get('Content-Security-Policy'),
+                            'X-Content-Type-Options': headers.get('X-Content-Type-Options'),
+                            'X-Frame-Options': headers.get('X-Frame-Options'),
+                            'Referrer-Policy': headers.get('Referrer-Policy')
+                        };
+                        
+                        // Contar cabeceras de seguridad presentes
+                        const presentHeadersCount = Object.values(securityHeaders)
+                                                   .filter(header => header !== null && header !== undefined).length;
+                        
+                        // Calcular puntuación de seguridad para este sitio
+                        const siteSecurityScore = Math.round((presentHeadersCount / 5) * 100);
+                        
+                        securityResults.httpSecurityTests.push({
+                            url: testUrl,
+                            responseStatus: response.status,
+                            securityHeaders,
+                            securityScore: siteSecurityScore
+                        });
+                        
+                        setRealTimeLogs(logs => [...logs, 
+                            `[${new Date().toLocaleTimeString()}] Seguridad HTTP de ${testUrl}: ${siteSecurityScore}% (${presentHeadersCount}/5 cabeceras)`
+                        ]);
+                    } catch (error) {
+                        securityResults.httpSecurityTests.push({
+                            url: testUrl,
+                            error: error.message
+                        });
+                        
+                        setRealTimeLogs(logs => [...logs, 
+                            `[${new Date().toLocaleTimeString()}] Error al analizar cabeceras HTTP de ${testUrl}: ${error.message}`
+                        ]);
+                    }
+                    
+                    // Actualizar progreso
+                    setSecurityTest(prev => ({...prev, progress: Math.min(90, prev.progress + 8)}));
+                }
+            }
+            
+            // Calcular puntuación global de seguridad
+            if (!signal.aborted) {
+                // Puntuación TLS (30% del total)
+                const tlsScore = securityResults.tlsTests.length > 0 ? 
+                    securityResults.tlsTests.reduce((score, test) => {
+                        if (!test.success) return score;
+                        
+                        // Puntuación según nivel de seguridad
+                        if (test.securityLevel === 'Alto') return score + 100;
+                        if (test.securityLevel === 'Medio') return score + 70;
+                        if (test.securityLevel === 'Bajo') return score + 30;
+                        return score + 50; // Valor por defecto
+                    }, 0) / securityResults.tlsTests.length : 0;
+                
+                // Puntuación certificados (40% del total)
+                const certScore = securityResults.certificateTests.length > 0 ?
+                    securityResults.certificateTests.reduce((score, test) => {
+                        // Si es un certificado inválido y lo rechazamos correctamente, es bueno
+                        if (test.expectedFailure && !test.validationSucceeded) return score + 100;
+                        // Si es un certificado válido y lo aceptamos, es bueno
+                        if (!test.expectedFailure && test.validationSucceeded) return score + 100;
+                        // En otros casos, es malo
+                        return score;
+                    }, 0) / securityResults.certificateTests.length : 0;
+                
+                // Puntuación HTTP Security (30% del total)
+                const httpScore = securityResults.httpSecurityTests.length > 0 ?
+                    securityResults.httpSecurityTests.reduce((score, test) => {
+                        return score + (test.securityScore || 0);
+                    }, 0) / securityResults.httpSecurityTests.length : 0;
+                
+                // Puntuación final ponderada
+                securityResults.securityScore = Math.round((tlsScore * 0.3) + (certScore * 0.4) + (httpScore * 0.3));
+                
+                // Mostrar resumen de resultados
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Prueba de seguridad completada`]);
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Puntuación TLS: ${Math.round(tlsScore)}%`]);
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Puntuación Certificados: ${Math.round(certScore)}%`]);
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Puntuación Seguridad HTTP: ${Math.round(httpScore)}%`]);
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Puntuación global de seguridad: ${securityResults.securityScore}%`]);
+                
+                // Actualizar estado con resultados
+                setSecurityTest({
+                    running: false,
+                    progress: 100,
+                    results: securityResults
+                });
+                
+                toast.success('Prueba de seguridad completada');
+            }
+            
+        } catch (error) {
+            console.error('Error en prueba de seguridad:', error);
+            
+            // Solo mostrar error si no fue una cancelación manual
+            if (!signal.aborted) {
+                toast.error('Error al ejecutar la prueba de seguridad: ' + error.message);
+                setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Error: ${error.message}`]);
+                
+                setSecurityTest({
+                    running: false,
+                    progress: 0,
+                    results: null,
+                    error: error.message
+                });
+            }
+        }
+    };
+    
+    // Función para cancelar la prueba de seguridad
+    const cancelSecurityTest = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            toast.info('Prueba de seguridad cancelada');
+            setRealTimeLogs(logs => [...logs, `[${new Date().toLocaleTimeString()}] Prueba de seguridad cancelada por el usuario`]);
+            setSecurityTest({
+                running: false,
+                progress: 0,
+                results: null
+            });
+        }
+    };
     
     // Función para limpiar los logs
     const clearLogs = () => {
@@ -474,11 +798,10 @@ const NetworkDiagnostics = () => {
         if (score >= 40) return 'average';
         return 'poor';
     };    return (
-        <div className="network-diagnostics-container">
-            <div className="diagnostics-header">
+        <div className="network-diagnostics-container">            <div className="diagnostics-header">
                 <button 
                     onClick={runDiagnostics}
-                    disabled={isRunning || stressTest.running}
+                    disabled={isRunning || stressTest.running || securityTest.running}
                     className="diagnostics-button"
                 >
                     {isRunning ? (
@@ -495,8 +818,26 @@ const NetworkDiagnostics = () => {
                 </button>
                 
                 <button 
+                    onClick={securityTest.running ? cancelSecurityTest : runSecurityTest}
+                    disabled={isRunning || stressTest.running}
+                    className={`security-test-button ${securityTest.running ? 'cancelling' : ''}`}
+                >
+                    {securityTest.running ? (
+                        <>
+                            <i className="fas fa-spinner fa-spin"></i>
+                            {securityTest.progress > 0 ? `Analizando seguridad (${securityTest.progress}%)` : 'Analizando seguridad...'}
+                        </>
+                    ) : (
+                        <>
+                            <i className="fas fa-shield-alt"></i>
+                            Prueba de seguridad
+                        </>
+                    )}
+                </button>
+                
+                <button 
                     onClick={stressTest.running ? cancelStressTest : runNetworkStressTest}
-                    disabled={isRunning}
+                    disabled={isRunning || securityTest.running}
                     className={`stress-test-button ${stressTest.running ? 'cancelling' : ''}`}
                 >
                     {stressTest.running ? (
@@ -826,10 +1167,167 @@ const NetworkDiagnostics = () => {
                         </div>
                     </div>
                 </div>
+            )}            {/* Resultados de prueba de seguridad */}
+            {securityTest.results && (
+                <div className="security-test-results">
+                    <div className="test-results-header">
+                        <h4><i className="fas fa-shield-alt"></i> Resultados de seguridad</h4>
+                    </div>
+                    
+                    <div className="security-score-container">
+                        <div className={`security-score ${
+                            securityTest.results.securityScore >= 80 ? 'excellent' :
+                            securityTest.results.securityScore >= 60 ? 'good' :
+                            securityTest.results.securityScore >= 40 ? 'average' : 'poor'
+                        }`}>
+                            <span className="score-value">{securityTest.results.securityScore}</span>
+                            <span className="score-label">Puntuación de seguridad</span>
+                        </div>
+                        
+                        <div className="security-details">
+                            <h5>Detalles de la evaluación</h5>
+                            
+                            <div className="security-category">
+                                <div className="category-header">
+                                    <span><i className="fas fa-lock"></i> Configuración TLS/SSL</span>
+                                </div>
+                                <div className="category-details">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Endpoint</th>
+                                                <th>Estado</th>
+                                                <th>Versión TLS</th>
+                                                <th>Seguridad</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {securityTest.results.tlsTests.map((test, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{test.endpoint}</td>
+                                                    <td className={test.success ? 'success-text' : 'error-text'}>
+                                                        {test.success ? 'Exitoso' : 'Fallido'}
+                                                    </td>
+                                                    <td>{test.tlsVersion || 'N/A'}</td>
+                                                    <td className={
+                                                        test.securityLevel === 'Alto' ? 'success-text' :
+                                                        test.securityLevel === 'Medio' ? 'warning-text' : 'error-text'
+                                                    }>
+                                                        {test.securityLevel || 'N/A'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div className="security-category">
+                                <div className="category-header">
+                                    <span><i className="fas fa-certificate"></i> Verificación de certificados</span>
+                                </div>
+                                <div className="category-details">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Prueba</th>
+                                                <th>Resultado</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {securityTest.results.certificateTests.map((test, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{test.url}</td>
+                                                    <td>
+                                                        {test.expectedFailure ? 
+                                                            (test.validationSucceeded ? 'Se aceptó certificado inseguro ⚠️' : 'Se rechazó certificado inseguro ✅') : 
+                                                            (test.validationSucceeded ? 'Certificado válido aceptado ✅' : 'Error de validación ❌')
+                                                        }
+                                                    </td>
+                                                    <td className={
+                                                        (test.expectedFailure && !test.validationSucceeded) || 
+                                                        (!test.expectedFailure && test.validationSucceeded) ? 
+                                                            'success-text' : 'error-text'
+                                                    }>
+                                                        {(test.expectedFailure && !test.validationSucceeded) || 
+                                                         (!test.expectedFailure && test.validationSucceeded) ? 
+                                                            'Correcto' : 'Incorrecto'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div className="security-category">
+                                <div className="category-header">
+                                    <span><i className="fas fa-globe"></i> Seguridad HTTP</span>
+                                </div>
+                                <div className="category-details">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Sitio</th>
+                                                <th>Estado</th>
+                                                <th>Puntuación</th>
+                                                <th>Cabeceras de seguridad</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {securityTest.results.httpSecurityTests.map((test, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{test.url}</td>
+                                                    <td className={test.error ? 'error-text' : 'success-text'}>
+                                                        {test.error ? 'Error' : `${test.responseStatus || 'N/A'}`}
+                                                    </td>
+                                                    <td className={
+                                                        test.securityScore >= 80 ? 'success-text' :
+                                                        test.securityScore >= 50 ? 'warning-text' : 'error-text'
+                                                    }>
+                                                        {test.securityScore || 0}%
+                                                    </td>
+                                                    <td className="security-headers">
+                                                        {test.securityHeaders ? 
+                                                            Object.entries(test.securityHeaders)
+                                                            .filter(([_k, v]) => v)
+                                                            .map(([k, _v], i) => <span key={i}>{k.replace(/([A-Z])/g, '-$1')}</span>)
+                                                            : 'N/A'
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div className="security-conclusion">
+                                {securityTest.results.securityScore >= 80 ? (
+                                    <div className="conclusion success">
+                                        <i className="fas fa-check-circle"></i>
+                                        Tu conexión a internet es segura. Las conexiones TLS/SSL están correctamente configuradas y los certificados se validan adecuadamente.
+                                    </div>
+                                ) : securityTest.results.securityScore >= 60 ? (
+                                    <div className="conclusion warning">
+                                        <i className="fas fa-exclamation-triangle"></i>
+                                        Tu conexión tiene un nivel de seguridad aceptable, pero hay áreas que pueden mejorarse para aumentar la protección de tu información.
+                                    </div>
+                                ) : (
+                                    <div className="conclusion error">
+                                        <i className="fas fa-times-circle"></i>
+                                        Se detectaron problemas de seguridad importantes en tu conexión. Te recomendamos actualizar tu navegador y sistema operativo a la última versión.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Componente de logs en tiempo real */}
-            {(isRunning || stressTest.running || realTimeLogs.length > 0) && (
+            {(isRunning || stressTest.running || securityTest.running || realTimeLogs.length > 0) && (
                 <>
                     <div className="logs-header">
                         <h4>
@@ -838,7 +1336,7 @@ const NetworkDiagnostics = () => {
                         <button 
                             className="clear-logs-button" 
                             onClick={clearLogs}
-                            disabled={isRunning || stressTest.running}
+                            disabled={isRunning || stressTest.running || securityTest.running}
                         >
                             <i className="fas fa-trash-alt"></i> Limpiar
                         </button>

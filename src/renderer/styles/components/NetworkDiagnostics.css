@@ -38,6 +38,34 @@
     cursor: not-allowed;
 }
 
+.security-test-button {
+    padding: 0.6rem 1rem;
+    background-color: #3182ce;  /* Azul para seguridad */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    flex: 1;
+}
+
+.security-test-button:hover {
+    background-color: #2c5282;
+}
+
+.security-test-button:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+}
+
+.security-test-button.cancelling {
+    background-color: #718096;
+}
+
 .stress-test-button {
     padding: 0.6rem 1rem;
     background-color: #e53e3e;
