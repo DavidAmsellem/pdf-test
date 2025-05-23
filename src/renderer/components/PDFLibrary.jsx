@@ -731,19 +731,22 @@ const PDFLibrary = () => {
                                     Crear mi primera biblioteca
                                 </button>
                             </div>
-                        ) : (
-                            filteredAndSortedLibraries.map(library => (
-                                <div key={library.id} className="library-card">                                    <div 
-                                        className={`library-header-card ${dragOverLibrary === library.id ? 'drag-over' : ''}`}
+                        ) : (                            filteredAndSortedLibraries.map(library => (
+                                <div 
+                                    key={library.id} 
+                                    className={`library-card ${dragOverLibrary === library.id ? 'drag-over' : ''}`}
+                                    onDragOver={(e) => handleDragOver(e, library.id)}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={(e) => handleDrop(e, library.id)}
+                                >
+                                    <div 
+                                        className="library-header-card"
                                         onClick={(e) => {
                                             // No ejecutar toggle si el clic fue en el título editable o en el área de drop
                                             if (!e.target.closest('.editable-title') && !e.target.closest('.drop-indicator')) {
                                                 toggleLibrary(library.id);
                                             }
                                         }}
-                                        onDragOver={(e) => handleDragOver(e, library.id)}
-                                        onDragLeave={handleDragLeave}
-                                        onDrop={(e) => handleDrop(e, library.id)}
                                     >
                                         <div className="library-info">
                                             <EditableTitle
