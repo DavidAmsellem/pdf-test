@@ -36,7 +36,14 @@ const Settings = () => {
                         <DatabaseTest />
                     </div>
                 </div>
-                
+                 <div className="settings-card full-width">
+                    <h3><i className="fas fa-network-wired"></i> Pruebas de Estabilidad de Red</h3>
+                    <p className="setting-description">
+                        Ejecuta un diagnóstico completo para verificar la estabilidad de la conexión y detectar posibles problemas de red.
+                    </p>
+                    <NetworkDiagnostics />
+                </div>
+
                 <div className="settings-card">
                     <h3>Almacenamiento</h3>
                     <div className="setting-item">
@@ -51,13 +58,7 @@ const Settings = () => {
                     </div>
                 </div>
 
-                <div className="settings-card full-width">
-                    <h3><i className="fas fa-network-wired"></i> Pruebas de Estabilidad de Red</h3>
-                    <p className="setting-description">
-                        Ejecuta un diagnóstico completo para verificar la estabilidad de la conexión y detectar posibles problemas de red.
-                    </p>
-                    <NetworkDiagnostics />
-                </div>
+               
             </div>
         </div>
     );

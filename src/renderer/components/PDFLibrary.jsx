@@ -808,10 +808,10 @@ const PDFLibrary = () => {
                                                                         title="Abrir PDF"
                                                                     >
                                                                         <i className="fas fa-external-link-alt"></i>
-                                                                    </button>
-                                                                    <YouSignButton 
+                                                                    </button>                                                                    <YouSignButton 
                                                                         pdfId={pdf.id} 
                                                                         title={pdf.title || 'Documento sin título'}
+                                                                        storage_path={pdf.storage_path}
                                                                     />
                                                                     <button 
                                                                         className="btn-action btn-delete"

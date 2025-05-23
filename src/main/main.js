@@ -90,8 +90,10 @@ function createSplashWindow() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 900,
+    width: 1300,
+    height: 1100,
+    minWidth: 1024,
+    minHeight: 768,
     frame: false,
     icon: path.join(__dirname, '../assets/icon.ico'),
     webPreferences: {

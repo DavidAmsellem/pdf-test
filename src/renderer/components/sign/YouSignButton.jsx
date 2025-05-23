@@ -1,57 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { supabase } from '../../../supabase/client';
 import YouSignWizard from './YouSignWizard';
 import SignatureStatus from '../SignatureStatus';
-import '../../styles/sign/YouSignButton.css';// Asegúrate de que la ruta sea correcta
+import DownloadButton from '../DownloadButton';
+import '../../styles/sign/YouSignButton.css';
 
-// Componente funcional que recibe pdfId y title como props
-const YouSignButton = ({ pdfId, title }) => {
+// Componente funcional que recibe pdfId, title y storage_path como props
+const YouSignButton = ({ pdfId, title, storage_path }) => {
     // Estado para controlar el estado de carga
     const [loading, setLoading] = useState(false);
     // Estado para mostrar/ocultar el wizard
     const [showWizard, setShowWizard] = useState(false);
-
-    // Función para asegurar que el PDF esté en caché antes de firmarlo
-    const ensurePdfIsCached = async () => {
-        try {
-            // Primero verificar si ya está en caché
-            const cached = await window.electronAPI.getFromCache(pdfId);
-            if (cached) return true;
-
-            // Si no está en caché, obtener URL y descargar
-            const { data: { signedUrl }, error: urlError } = await supabase.storage
-                .from('pdfs')
-                .createSignedUrl(pdfId, 60);
-
-            if (urlError) throw urlError;
-
-            const result = await window.electronAPI.downloadAndCache({
-                id: pdfId,
-                url: signedUrl,
-                metadata: { title }
-            });
-
-            if (!result.success) throw new Error(result.error);
-            return true;
-        } catch (error) {
-            console.error('Error al cachear PDF:', error);
-            return false;
-        }
-    };
-
-    // Función que maneja el envío del formulario
+    // Ref para acceder al DownloadButton
+    const downloadRef = useRef();    // Función que maneja el envío del formulario
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
         setLoading(true); // Activa el estado de carga
-
+        
         try {
-            // Asegurarse de que el PDF esté en caché antes de proceder
-            const isCached = await ensurePdfIsCached();
-            if (!isCached) {
-                throw new Error('No se pudo preparar el PDF para la firma');
-            }
-
             const formData = new FormData(e.target);
             const data = {
                 pdfId,
@@ -85,10 +52,30 @@ const YouSignButton = ({ pdfId, title }) => {
             setLoading(false); // Desactiva el estado de carga
         }
     };
-
+    
     // Función para manejar clic en el botón de firmar
-    const handleSignClick = () => {
-        setShowWizard(true);
+    const handleSignClick = async () => {
+        try {
+            setLoading(true);
+            console.log('Iniciando proceso de firma silenciosa para PDF:', pdfId);
+            
+            // Ejecutar el cacheo silencioso antes de mostrar el wizard
+            if (downloadRef.current) {
+                console.log('Ejecutando cacheo silencioso...');
+                await downloadRef.current.handleCacheOnly();
+                console.log('Cacheo silencioso completado exitosamente');
+            } else {
+                throw new Error('Referencia al componente de descarga no disponible');
+            }
+            
+            // Si el cacheo es exitoso, mostrar el wizard
+            setShowWizard(true);
+        } catch (error) {
+            console.error('Error al preparar el documento:', error);
+            toast.error('Error al preparar el documento para firma: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -103,6 +90,14 @@ const YouSignButton = ({ pdfId, title }) => {
                 <i className="fas fa-file-signature"></i>
                 {loading ? 'Iniciando firma...' : 'Firmar con YouSign'}
             </button>
+
+            {/* DownloadButton oculto para manejar la descarga/caché */}
+            <div style={{ display: 'none' }}>
+                <DownloadButton
+                    ref={downloadRef}
+                    pdfData={{ id: pdfId, title, storage_path }}
+                />
+            </div>
             
             {/* Wizard para firma con YouSign */}
             <YouSignWizard
